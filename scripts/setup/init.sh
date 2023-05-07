@@ -25,8 +25,8 @@ setup_wireguard () {
   read -p "Type the public key of the server: " wg_pubkey
   read -p "Do you want to route all outgoing traffic through the tunnel (y/n)? " wg_ai_choice
   case $wg_ai_choice in
-    [Nn]* ) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
-    * ) wg_allowed_ips="0.0.0.0/0"; break;;
+    "n") read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
+    *) wg_allowed_ips="0.0.0.0/0"; break;;
   esac
   cat <<EOF > temp-wg0.conf
 [Interface]
@@ -43,13 +43,17 @@ EOF
   mv temp-wg0.conf /etc/wireguard/wg0.conf
   systemctl enable --now wg-quick@wg0
 }
+echo ""
+echo "----------------------------------------------------------"
 echo "Do you want to configure Wireguard access to this machine?"
 echo "(You need to have a Wireguard server already configured)"
 read -p "Setup Wireguard (y/n)? " wg_choice
 case $wg_choice in
-  [Nn]* ) echo "Wireguard will NOT be configured"; break;;
-  * ) setup_wireguard; break;;
+  "n") echo "Wireguard will NOT be configured"; break;;
+  *) setup_wireguard; break;;
 esac
+echo "----------------------------------------------------------"
+echo ""
 
 # nginx
 apt install -y nginx
