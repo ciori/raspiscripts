@@ -1,26 +1,31 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # Main Raspiscripts script
 
-echo "--------------------"
-echo "--- Raspiscripts ---" 
-echo "--------------------"
-echo ""
+HEIGHT=15
+WIDTH=40
+CHOICE_HEIGHT=4
+BACKTITLE="Raspiscripts"
+TITLE="Raspiscripts Main Menu"
+MENU="Choose one of the following options:"
 
-show_main_options () {
-  echo "What do you want to do?"
-  echo "[1] init system"
-  echo "[...] ... WIP ..."
-  echo "[h] show options"
-  echo "[q] quit"
-}
+OPTIONS=(1 "Init System"
+         2 "... WIP ...")
 
-while true; do
-  read -p "Choose your option: " main_choice
-  case $main_choice in
-    [1]* ) curl -fsSL https://raw.githubusercontent.com/ciori/raspiscripts/main/scripts/setup/init.sh | sudo -E bash -; break;;
-    [h]* ) show_main_options;;
-    [q]* ) exit;;
-    * ) echo "Please give a correct option";;
-  esac
-done
+CHOICE=$(dialog --clear \
+          --backtitle "$BACKTITLE" \
+          --title "$TITLE" \
+          --menu "$MENU" \
+          $HEIGHT $WIDTH $CHOICE_HEIGHT \
+          "${OPTIONS[@]}" \
+          2>&1 >/dev/tty)
+
+clear
+case $CHOICE in
+  1)
+    curl -fsSL https://raw.githubusercontent.com/ciori/raspiscripts/main/scripts/setup/init.sh | sudo -E bash -
+    ;;
+  2)
+    echo "WIP"
+    ;;
+esac

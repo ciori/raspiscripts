@@ -23,14 +23,11 @@ setup_wireguard () {
   read -p "Type the private key for this peer: " wg_privkey
   read -p "Type the Wireguard server endpoint [IP or FQDN:PORT]: " wg_endpoint
   read -p "Type the public key of the server: " wg_pubkey
-  while true; do
-    read -p "Do you want to route all the outgoing traffic through the tunnel (y/n)? " wg_ai_choice
-    case $wg_ai_choice in
-      [Yy]* ) wg_allowed_ips="0.0.0.0/0"; break;;
-      [Nn]* ) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
-      * ) echo "Please answer yes or no.";;
-    esac
-  done
+  read -p "Do you want to route all outgoing traffic through the tunnel (y/n)? " wg_ai_choice
+  case $wg_ai_choice in
+    [Nn]* ) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
+    * ) wg_allowed_ips="0.0.0.0/0"; break;;
+  esac
   cat <<EOF > temp-wg0.conf
 [Interface]
 Address = $wg_address
@@ -48,14 +45,11 @@ EOF
 }
 echo "Do you want to configure Wireguard access to this machine?"
 echo "(You need to have a Wireguard server already configured)"
-while true; do
-  read -p "Setup Wireguard (y/n)? " wg_choice
-  case $wg_choice in
-    [Yy]* ) setup_wireguard; break;;
-    [Nn]* ) exit;;
-    * ) echo "Please answer yes or no.";;
-  esac
-done
+read -p "Setup Wireguard (y/n)? " wg_choice
+case $wg_choice in
+  [Nn]* ) echo "Wireguard will NOT be configured"; break;;
+  * ) setup_wireguard; break;;
+esac
 
 # nginx
 apt install -y nginx
