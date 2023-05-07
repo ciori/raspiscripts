@@ -63,8 +63,8 @@ esac
 
 # nginx
 apt install -y nginx
-openssl req -x509 -nodes -newkey rsa:4096 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=localhost" -days 3650`
-mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak`
+openssl req -x509 -nodes -newkey rsa:4096 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=localhost" -days 3650
+mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
 cat <<EOF > temp-nginx.conf
 user www-data;
 worker_processes 1;
@@ -93,9 +93,12 @@ mkdir /etc/nginx/streams-enabled
 
 # tor
 apt install -y tor
-echo "ControlPort 9051" | tee -a /etc/tor/torrc
-echo "CookieAuthentication 1" | tee -a /etc/tor/torrc
-echo "CookieAuthFileGroupReadable 1" | tee -a /etc/tor/torrc
+mv /etc/tor/torrc /etc/tor/torrc.bak
+cat <<EOF > /etc/tor/torrc
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFileGroupReadable 1
+EOF
 systemctl restart tor
 
 # nodejs
