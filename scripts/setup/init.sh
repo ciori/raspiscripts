@@ -57,7 +57,7 @@ wg_choice=$(dialog --clear \
           15 40 2>&1 >/dev/tty)
 clear
 case $wg_choice in
-  0) setup_wireguard;;
+  0) setup_wireguard; break;;
   *) echo "Wireguard will NOT be configured";;
 esac
 
