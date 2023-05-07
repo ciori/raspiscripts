@@ -2,6 +2,8 @@
 
 # Main Raspiscripts script
 
+apt install -y dialog
+
 HEIGHT=15
 WIDTH=40
 CHOICE_HEIGHT=4
