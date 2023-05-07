@@ -24,12 +24,12 @@ setup_wireguard () {
   read -p "Type the private key for this peer: " wg_privkey
   read -p "Type the Wireguard server endpoint [IP or FQDN:PORT]: " wg_endpoint
   read -p "Type the public key of the server: " wg_pubkey
-  CHOICE=$(dialog --clear --backtitle "Raspiscripts" \
+  wg_ai_choice=$(dialog --clear --backtitle "Raspiscripts" \
             --title "Wireguard Configuration" \
             --yesno "Do you want to route all outgoing traffic through the tunnel?" \
             15 40 2>&1 >/dev/tty)
   clear
-  case $CHOICE in
+  case $wg_ai_choice in
     0) wg_allowed_ips="0.0.0.0/0"; break;;
     *) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
   esac
@@ -49,14 +49,14 @@ EOF
   systemctl enable --now wg-quick@wg0
 }
 
-CHOICE=$(dialog --clear \
+wg_choice=$(dialog --clear \
           --backtitle "Raspiscripts" \
           --title "Wireguard Configuration" \
           --yesno "Do you want to configure Wireguard access to this machine?
 (You need to have a Wireguard server already configured)" \
           15 40 2>&1 >/dev/tty)
 clear
-case $CHOICE in
+case $wg_choice in
   0) setup_wireguard;;
   *) echo "Wireguard will NOT be configured";;
 esac
@@ -92,7 +92,7 @@ rm -rf temp-nginx.conf
 mkdir /etc/nginx/streams-enabled
 
 # tor
-apt install -y tor`
+apt install -y tor
 echo "ControlPort 9051" | tee -a /etc/tor/torrc
 echo "CookieAuthentication 1" | tee -a /etc/tor/torrc
 echo "CookieAuthFileGroupReadable 1" | tee -a /etc/tor/torrc
