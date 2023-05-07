@@ -4,7 +4,7 @@
 
 # update and install initial packages
 apt update -y && apt full-upgrade -y && autoremove -y
-apt install -y vim tree curl wget gpg git --install-recommends
+apt install -y vim tree gpg git --install-recommends
 
 # ufw (allow ssh)
 apt install -y ufw
