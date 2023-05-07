@@ -11,7 +11,6 @@ sudo apt install -y ufw
 sudo ufw allow ssh
 sudo ufw enable
 sudo systemctl enable --now ufw
-# ...
 
 # fail2ban
 sudo apt install -y fail2ban
