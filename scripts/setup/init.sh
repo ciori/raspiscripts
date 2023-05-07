@@ -16,6 +16,7 @@ systemctl enable --now ufw
 apt install -y fail2ban
 
 # wireguard
+
 setup_wireguard () {
   apt install -y wireguard-tools openresolv
   read -p "Type the Wireguard address for this peer [IP/Mask]: " wg_address
@@ -23,10 +24,14 @@ setup_wireguard () {
   read -p "Type the private key for this peer: " wg_privkey
   read -p "Type the Wireguard server endpoint [IP or FQDN:PORT]: " wg_endpoint
   read -p "Type the public key of the server: " wg_pubkey
-  read -p "Do you want to route all outgoing traffic through the tunnel (y/n)? " wg_ai_choice
-  case $wg_ai_choice in
-    "n") read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
-    *) wg_allowed_ips="0.0.0.0/0"; break;;
+  CHOICE=$(dialog --clear --backtitle "Raspiscripts" \
+            --title "Wireguard Configuration" \
+            --yesno "Do you want to route all outgoing traffic through the tunnel?" \
+            15 40 2>&1 >/dev/tty)
+  clear
+  case $CHOICE in
+    0) wg_allowed_ips="0.0.0.0/0"; break;;
+    *) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
   esac
   cat <<EOF > temp-wg0.conf
 [Interface]
@@ -43,17 +48,18 @@ EOF
   mv temp-wg0.conf /etc/wireguard/wg0.conf
   systemctl enable --now wg-quick@wg0
 }
-echo ""
-echo "----------------------------------------------------------"
-echo "Do you want to configure Wireguard access to this machine?"
-echo "(You need to have a Wireguard server already configured)"
-read -p "Setup Wireguard (y/n)? " wg_choice
-case $wg_choice in
-  "n") echo "Wireguard will NOT be configured"; break;;
-  *) setup_wireguard; break;;
+
+CHOICE=$(dialog --clear \
+          --backtitle "Raspiscripts" \
+          --title "Wireguard Configuration" \
+          --yesno "Do you want to configure Wireguard access to this machine?
+(You need to have a Wireguard server already configured)" \
+          15 40 2>&1 >/dev/tty)
+clear
+case $CHOICE in
+  0) setup_wireguard;;
+  *) echo "Wireguard will NOT be configured";;
 esac
-echo "----------------------------------------------------------"
-echo ""
 
 # nginx
 apt install -y nginx
@@ -83,7 +89,7 @@ stream {
 EOF
 mv temp-nginx.conf /etc/nginx/nginx.conf
 rm -rf temp-nginx.conf
-mkdir /etc/nginx/streams-enabled`
+mkdir /etc/nginx/streams-enabled
 
 # tor
 apt install -y tor`
