@@ -3,21 +3,21 @@
 # Initialize the system with all the necessary parts
 
 # update and install initial packages
-sudo apt update -y && sudo apt full-upgrade -y && sudo autoremove -y
-sudo apt install -y vim tree curl wget gpg git --install-recommends
+apt update -y && apt full-upgrade -y && autoremove -y
+apt install -y vim tree curl wget gpg git --install-recommends
 
 # ufw (allow ssh)
-sudo apt install -y ufw
-sudo ufw allow ssh
-sudo ufw enable
-sudo systemctl enable --now ufw
+apt install -y ufw
+ufw allow ssh
+ufw enable
+systemctl enable --now ufw
 
 # fail2ban
-sudo apt install -y fail2ban
+apt install -y fail2ban
 
 # wireguard
 setup_wireguard () {
-  sudo apt install -y wireguard-tools openresolv
+  apt install -y wireguard-tools openresolv
   read -p "Type the Wireguard address for this peer [IP/Mask]: " wg_address
   read -p "Type the DNS server to use [IP]: " wg_dns
   read -p "Type the private key for this peer: " wg_privkey
@@ -43,7 +43,7 @@ Endpoint = $wg_endpoint
 PersistentKeepalive = 25
 PublicKey = $wg_pubkey
 EOF
-  sudo mv temp-wg0.conf /etc/wireguard/wg0.conf
+  mv temp-wg0.conf /etc/wireguard/wg0.conf
   systemctl enable --now wg-quick@wg0
 }
 echo "Do you want to configure Wireguard access to this machine?"
@@ -58,9 +58,9 @@ while true; do
 done
 
 # nginx
-sudo apt install -y nginx
-sudo openssl req -x509 -nodes -newkey rsa:4096 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=localhost" -days 3650`
-sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak`
+apt install -y nginx
+openssl req -x509 -nodes -newkey rsa:4096 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=localhost" -days 3650`
+mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak`
 cat <<EOF > temp-nginx.conf
 user www-data;
 worker_processes 1;
@@ -83,20 +83,20 @@ stream {
 
 }
 EOF
-sudo mv temp-nginx.conf /etc/nginx/nginx.conf
+mv temp-nginx.conf /etc/nginx/nginx.conf
 rm -rf temp-nginx.conf
-sudo mkdir /etc/nginx/streams-enabled`
+mkdir /etc/nginx/streams-enabled`
 
 # tor
-sudo apt install -y tor`
-echo "ControlPort 9051" | sudo tee -a /etc/tor/torrc
-echo "CookieAuthentication 1" | sudo tee -a /etc/tor/torrc
-echo "CookieAuthFileGroupReadable 1" | sudo tee -a /etc/tor/torrc
+apt install -y tor`
+echo "ControlPort 9051" | tee -a /etc/tor/torrc
+echo "CookieAuthentication 1" | tee -a /etc/tor/torrc
+echo "CookieAuthFileGroupReadable 1" | tee -a /etc/tor/torrc
 systemctl restart tor
 
 # nodejs
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-sudo apt install nodejs -y
+apt install nodejs -y
 
 # rust
-sudo apt install -y cargo clang cmake
+apt install -y cargo clang cmake
