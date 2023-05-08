@@ -11,7 +11,7 @@ apt install -y vim tree gpg git --install-recommends
 
 apt install -y ufw
 ufw allow ssh
-ufw enable
+echo "y" | ufw enable
 systemctl enable --now ufw
 
 # fail2ban
@@ -22,21 +22,19 @@ apt install -y fail2ban
 
 setup_wireguard () {
   apt install -y wireguard-tools openresolv
-  read -p "Type the Wireguard address for this peer [IP/Mask]: " wg_address
-  read -p "Type the DNS server to use [IP]: " wg_dns
-  read -p "Type the private key for this peer: " wg_privkey
-  read -p "Type the Wireguard server endpoint [IP or FQDN:PORT]: " wg_endpoint
-  read -p "Type the public key of the server: " wg_pubkey
-  read -p "Type the allowed IPs [ex: 0.0.0.0/0]: " wg_allowed_ips
-  # wg_ai_choice=$(dialog --clear --backtitle "Raspiscripts" \
-  #           --title "Wireguard Configuration" \
-  #           --yesno "Do you want to route all outgoing traffic through the tunnel?" \
-  #           15 40 2>&1 >/dev/tty)
-  # clear
-  # case $wg_ai_choice in
-  #   0) wg_allowed_ips="0.0.0.0/0"; break;;
-  #   *) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
-  # esac
+  backtitle="Raspiscripts"
+  wg_address=$(dialog --clear --backtitle "$backtitle" --title "Wireguard Address" \
+    --inputbox "Please type the Wireguard address for this peer [IP/Mask]:" 15 40 2>&1 >/dev/tty)
+  wg_dns=$(dialog --clear --backtitle "$backtitle" --title "Wireguard DNS" \
+    --inputbox "Please type the DNS server to use [IP]:" 15 40 2>&1 >/dev/tty)
+  wg_privkey=$(dialog --clear --backtitle "$backtitle" --title "Wireguard Private Key" \
+    --inputbox "Please type the private key for this peer:" 15 40 2>&1 >/dev/tty)
+  wg_endpoint=$(dialog --clear --backtitle "$backtitle" --title "Wireguard Endpoint" \
+    --inputbox "Please type the Wireguard server endpoint [IP or FQDN:PORT]:" 15 40 2>&1 >/dev/tty)
+  wg_pubkey=$(dialog --clear --backtitle "$backtitle" --title "Wireguard Server Public Key" \
+    --inputbox "Please type the public key of the server:" 15 40 2>&1 >/dev/tty)
+  wg_allowed_ips=$(dialog --clear --backtitle "$backtitle" --title "Wireguard Server Public Key" \
+    --inputbox "Please type the the allowed IPs [0.0.0.0/0 to route all traffic through the tunnel]:" 15 40 2>&1 >/dev/tty)
   cat <<EOF > temp-wg0.conf
 [Interface]
 Address = $wg_address
@@ -52,10 +50,9 @@ EOF
   systemctl enable --now wg-quick@wg0
 }
 
-backtitle="Raspiscripts"
-title="Wireguard Configuration"
-description="Do you want to configure Wireguard access to this machine? (You need to have a Wireguard server already configured)"
-dialog --clear --backtitle $backtitle --title $title --yesno $description 15 40
+dialog --clear --backtitle "Raspiscripts" --title "Wireguard Configuration" \
+  --yesno "Do you want to configure Wireguard access to this machine? (You need to have a Wireguard server already configured)" \
+  15 40
 wg_choice=$?
 clear
 if [ "$wg_choice" -eq 0 ]; then
