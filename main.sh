@@ -2,7 +2,7 @@
 
 # Main Raspiscripts script
 
-apt install -y dialog
+sudo apt install -y dialog
 
 HEIGHT=15
 WIDTH=40
@@ -25,7 +25,7 @@ CHOICE=$(dialog --clear \
 clear
 case $CHOICE in
   1)
-    curl -fsSL https://raw.githubusercontent.com/ciori/raspiscripts/main/scripts/setup/init.sh | sudo -E bash -
+    sudo -E bash ./scripts/setup/init.sh
     ;;
   2)
     echo "WIP"

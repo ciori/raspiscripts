@@ -3,16 +3,19 @@
 # Initialize the system with all the necessary parts
 
 # update and install initial packages
+
 apt update -y && apt full-upgrade -y && autoremove -y
 apt install -y vim tree gpg git --install-recommends
 
 # ufw (allow ssh)
+
 apt install -y ufw
 ufw allow ssh
 ufw enable
 systemctl enable --now ufw
 
 # fail2ban
+
 apt install -y fail2ban
 
 # wireguard
@@ -24,21 +27,21 @@ setup_wireguard () {
   read -p "Type the private key for this peer: " wg_privkey
   read -p "Type the Wireguard server endpoint [IP or FQDN:PORT]: " wg_endpoint
   read -p "Type the public key of the server: " wg_pubkey
-  wg_ai_choice=$(dialog --clear --backtitle "Raspiscripts" \
-            --title "Wireguard Configuration" \
-            --yesno "Do you want to route all outgoing traffic through the tunnel?" \
-            15 40 2>&1 >/dev/tty)
-  clear
-  case $wg_ai_choice in
-    0) wg_allowed_ips="0.0.0.0/0"; break;;
-    *) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
-  esac
+  read -p "Type the allowed IPs [ex: 0.0.0.0/0]: " wg_allowed_ips
+  # wg_ai_choice=$(dialog --clear --backtitle "Raspiscripts" \
+  #           --title "Wireguard Configuration" \
+  #           --yesno "Do you want to route all outgoing traffic through the tunnel?" \
+  #           15 40 2>&1 >/dev/tty)
+  # clear
+  # case $wg_ai_choice in
+  #   0) wg_allowed_ips="0.0.0.0/0"; break;;
+  #   *) read -p "Type the Wireguard allowed IPs [IP/Mask]: " wg_allowed_ips; break;;
+  # esac
   cat <<EOF > temp-wg0.conf
 [Interface]
 Address = $wg_address
 DNS = $wg_dns
 PrivateKey = $wg_privkey
-
 [Peer]
 AllowedIPs = $wg_allowed_ips
 Endpoint = $wg_endpoint
@@ -49,20 +52,20 @@ EOF
   systemctl enable --now wg-quick@wg0
 }
 
-wg_choice=$(dialog --clear \
-          --backtitle "Raspiscripts" \
-          --title "Wireguard Configuration" \
-          --yesno "Do you want to configure Wireguard access to this machine?
-(You need to have a Wireguard server already configured)" \
-          15 40 2>&1 >/dev/tty)
+backtitle="Raspiscripts"
+title="Wireguard Configuration"
+description="Do you want to configure Wireguard access to this machine? (You need to have a Wireguard server already configured)"
+dialog --clear --backtitle $backtitle --title $title --yesno $description 15 40
+wg_choice=$?
 clear
-case $wg_choice in
-  0) setup_wireguard;;
-  1) echo "Wireguard will NOT be configured";;
-  255) echo "Wireguard will NOT be configured";;
-esac
+if [ "$wg_choice" -eq 0 ]; then
+  setup_wireguard
+else
+  echo "Wireguard will NOT be configured"
+fi
 
 # nginx
+
 apt install -y nginx
 openssl req -x509 -nodes -newkey rsa:4096 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=localhost" -days 3650
 mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
@@ -93,6 +96,7 @@ rm -rf temp-nginx.conf
 mkdir /etc/nginx/streams-enabled
 
 # tor
+
 apt install -y tor
 mv /etc/tor/torrc /etc/tor/torrc.bak
 cat <<EOF > /etc/tor/torrc
@@ -103,8 +107,10 @@ EOF
 systemctl restart tor
 
 # nodejs
+
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
 apt install nodejs -y
 
 # rust
+
 apt install -y cargo clang cmake
