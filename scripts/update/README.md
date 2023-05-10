@@ -1,3 +1,3 @@
 # Update scripts
-update_node.sh		execute node update
-update_node.conf	configuration file
+update_bitcoin_core.sh	execute update of bitcoin core
+functions.sh		support funcions

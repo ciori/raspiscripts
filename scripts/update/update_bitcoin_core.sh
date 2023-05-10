@@ -1,5 +1,24 @@
 #! /bin/bash
-. update_node.conf
+
+# Import functions
+. functions.sh
+
+# Parameters Definition
+user=$(whoami)
+sys_arch=x86_64
+min_sig_threeshold=3
+
+log_dir=/home/$user/update_node_logs
+log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
+
+# Helping Functions
+function outl {
+  echo $(date "+%F %T")" - INFO - "
+}
+
+function errl {
+  echo $(date "+%F %T")" - ERROR - "
+}
 
 function parse_sig_log() {
   count=$1
@@ -61,7 +80,7 @@ b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
 echo $(outl)"Bitcoin Core current version:" $b_core_v >> $log
 b_core_latest=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||')
 echo $(outl)"Bitcoin Core latest available release:" $b_core_latest >> $log
-b_core_v=1.0.0
+
 if [ $b_core_v == $b_core_latest ]
 then
   echo $(outl)"Version matching, nothing to do" >> $log
@@ -148,7 +167,7 @@ else
 
   # Installation of binaries
   echo $(outl)"Starting binaries installation" >> $log
-  #sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-$b_core_latest/bin/*
+  sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-$b_core_latest/bin/*
 
   b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
   if [ $b_core_v == $b_core_latest ]
