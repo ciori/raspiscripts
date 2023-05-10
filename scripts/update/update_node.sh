@@ -31,6 +31,30 @@ function parse_sig_log() {
     return $count
 }
 
+function download_file() {
+  url=$1
+  file=$(echo $url | sed 's|.*/||')
+
+  wget -q $url
+  if [ $? == 0 ]
+  then
+    if [ -f $file ]
+    then
+      echo "$file downloaded from $url"
+      return 0
+    else
+      echo "error while downloading $file from error"
+      return 1
+    fi
+  else
+    echo "$url downloaded but $file missing"
+    return 2
+  fi
+}
+
+sudo mkdir -p $log_dir
+sudo chown $user:$user $log_dir
+
 echo $(outl)"Script update_node execution starts" >> $log
 
 b_core_update_ok=0
@@ -60,51 +84,30 @@ then
     echo $(outl)"Starting files download" >> $log
 
     # Download tar
-    wget -q https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/bitcoin-$b_core_latest-$sys_arch-linux-gnu.tar.gz
+    download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/bitcoin-$b_core_latest-$sys_arch-linux-gnu.tar.gz)
     if [ $? == 0 ]
     then
-      echo $(outl)"Bitcoin Core tar download ok" >> $log
+      echo $(outl)$download_res >> $log
     else
-      echo $(errl)"Bitcoin Core tar download error" >> $log
-    fi
-    if [ -f bitcoin-$b_core_latest-$sys_arch-linux-gnu.tar.gz ]
-    then
-      echo $(outl)"Bitcoin Core tar file detected" >> $log
-    else
-      echo $(errl)"Bitcoin Core tar file missing, update aborted" >> $log
-      exit 1
+      echo $(errl)$download_res >> $log
     fi
 
     # Download checksum
-    wget -q https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/SHA256SUMS
+    download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/SHA256SUMS)
     if [ $? == 0 ]
     then
-      echo $(outl)"Bitcoin Core checksum download ok" >> $log
+      echo $(outl)$download_res >> $log
     else
-      echo $(errl)"Bitcoin Core checksum download error" >> $log
-    fi
-    if [ -f SHA256SUMS ]
-    then
-      echo $(outl)"Bitcoin Core checksum file detected" >> $log
-    else
-      echo $(errl)"Bitcoin Core checksum file missing, update aborted" >> $log
-      exit 1
+      echo $(errl)$download_res >> $log
     fi
 
     # Download signature
-    wget -q https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/SHA256SUMS.asc
+    download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/SHA256SUMS.asc)
     if [ $? == 0 ]
     then
-      echo $(outl)"Bitcoin Core signature download ok" >> $log
+      echo $(outl)$download_res >> $log
     else
-      echo $(errl)"Bitcoin Core signature download error" >> $log
-    fi
-    if [ -f SHA256SUMS.asc ]
-    then
-      echo $(outl)"Bitcoin Core signature file detected" >> $log
-    else
-      echo $(errl)"Bitcoin Core signature file missing, update aborted" >> $log
-      exit 1
+      echo $(errl)$download_res >> $log
     fi
 
     # Checksum verification
@@ -193,7 +196,7 @@ then
 else
   echo $(outl)"Bitcoin Core has NOT been updated, current version: $b_core_v" >> $log
 fi
-if [ $b_core_status == 1 ]
+if [[ $b_core_status == *"running"* ]]
 then
   echo $(outl)"Service bitcoind is running" >> $log
 else
