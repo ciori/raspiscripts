@@ -1,75 +1,78 @@
 #! /bin/bash
 
-# Import functions
+# Import helping functions
 . functions.sh
+
+function show_usage() {
+  printf "Usage: $0 [optional parameter(s)]\n"
+  printf "\n"
+  printf "Options:\n"
+  printf " -s | --sig_min\tminimum number of valid signatures accepted [3]\n"
+  printf " -a | --sys_arc\tsystem architecture, valid options: x86_64, aarch64, arm [x86_64]\n"
+  printf " -d | --log_dir\tpath to save logs [/home/$(whoami)/]\n"
+  printf " -h | --help\t\\ttshow usage\n"
+
+  return 0
+}
 
 # Parameters Definition
 user=$(whoami)
 sys_arch=x86_64
-min_sig_threeshold=3
+sig_min=3
+log_dir=/home/$(whoami)/logs/
 
-log_dir=/home/$user/update_node_logs
-log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
-
-# Helping Functions
-function outl {
-  echo $(date "+%F %T")" - INFO - "
-}
-
-function errl {
-  echo $(date "+%F %T")" - ERROR - "
-}
-
-function parse_sig_log() {
-  count=$1
-  st=$2
-
-  while IFS= read -r line
-    do
-      if [[ $line == *"Good signature from"* ]]
-      then
-        sig_name=${line#*\"}
-        sig_name="Good signature from "${sig_name%\"*}
-      elif [[ $line == *"WARNING: This key is not certified with a trusted signature!"* ]]
-      then
-        warning_found=1
-      elif [[ $line == *"Primary key fingerprint:"* ]]
-      then
-        key_fingerprint=${line#*:}
-        echo $(outl)$sig_name >> $log
-        echo $(outl)"Key fingerprint "$key_fingerprint >> $log
-        count=$(($count+1))
-        if [ $warning_found == 1 ]
-        then
-          echo $(outl)"WARNING: This key is not certified with a trusted signature!" >> $log
-          warning_found=0
-        fi
-      fi
-    done <<< $st
-
-    return $count
-}
-
-function download_file() {
-  url=$1
-  file=$(echo $url | sed 's|.*/||')
-
-  wget -q $url
-  if [ $? == 0 ]
-  then
-    if [ -f $file ]
+# Check if optional arguments are valid
+while [ ! -z "$1" ];
+do
+  if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+    show_usage
+  elif [[ "$1" == "-s" ]] || [[ "$1" == "--sig_min" ]]; then
+    sig_min=$2
+    if [[ -z $sig_min ]]
     then
-      echo "$file downloaded from $url"
-      return 0
-    else
-      echo "error while downloading $file from error"
-      return 1
+      echo "No values provided for $1"
+      exit 1
     fi
+    sig_min_re='^[0-9]+$'
+    if ! [[ $sig_min =~ $sig_min_re ]]
+    then
+      echo "Invalid input $sig_min, $1 must be an integer"
+      exit 1
+    fi
+    shift
+  elif [[ "$1" == "-a" ]] || [[ "$1" == "--sys_arc" ]]; then
+    sys_arc=$2
+    if [[ -z $sig_min ]]
+    then
+      echo "No values provided for $1"
+      exit 1
+    fi
+    if ! [[ $sys_arc == "x86_64" ]] || [[ $sys_arc == "aarch64" ]] || [[ $sys_arc == "arm" ]]
+    then
+      echo "Invalid input $sys_arc, $1 valid values are: x86_64, aarch64, arm"
+    fi
+    shift
+  elif [[ "$1" == "-d" ]] || [[ "$1" == "--log_dir" ]]; then
+    log_dir=$2
+    if [[ -z $log_dir ]]
+    then
+      echo "No values provided for $1"
+      exit 1
+    fi
+    if ! [ -d $log_dir ]
+    then
+      echo "directory $log_dir does not exist"
+    fi
+    shift
   else
-    echo "$url downloaded but $file missing"
-    return 2
+    echo "Invalid argument $1"
+    show_usage
+    exit 1
   fi
-}
+  shift
+done
+
+log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
 
 b_core_update_ok=0
 
@@ -146,9 +149,9 @@ else
   echo $(outl)$sig_count" signatures found" >> $log
 
   # Signature number check
-  if [ $sig_count -lt $min_sig_threeshold ]
+  if [ $sig_count -lt $sig_min ]
   then
-    echo $(errl)"Minimum signature count not reached("$min_sig_threeshold"), update aborted" >> $log
+    echo $(errl)"Minimum signature count not reached("$sig_min"), update aborted" >> $log
     exit 1
   else
     echo $(outl)"Minimum signature count reached" >> $log
