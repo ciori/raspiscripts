@@ -185,10 +185,10 @@ else
   # Service restart
   echo $(outl)"Restarting service bitcoind" >> $log
   sudo systemctl restart bitcoind
-  b_core_status=$(sudo systemctl status bitcoind.service | grep Active | sed 's|.*Active:.*(||;s|).*||')
-  if [ $b_core_status == "running" ]
+  b_core_status=$(sudo systemctl status bitcoind.service | grep Active | sed 's|.*Active: ||;s|).*|)|')
+  if [ "$b_core_status" == "active (running)" ]
   then
-    echo $(outl)"Service bitcoind restarted correctly, service is now running" >> $log
+    echo $(outl)"Service bitcoind restarted correctly, service is $b_core_status" >> $log
   else
     echo $(errl)"Service bitcoind restart failed, service status is $b_core_status" >> $log
   fi
