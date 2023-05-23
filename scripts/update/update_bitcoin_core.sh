@@ -184,7 +184,7 @@ else
 
   # Service restart
   echo $(outl)"Restarting service bitcoind" >> $log
-  #sudo systemctl restart bitcoind
+  sudo systemctl restart bitcoind
   b_core_status=$(sudo systemctl status bitcoind.service | grep Active | sed 's|.*Active:.*(||;s|).*||')
   if [ $b_core_status == "running" ]
   then
