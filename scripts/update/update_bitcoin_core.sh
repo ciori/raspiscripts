@@ -1,8 +1,5 @@
 #! /bin/bash
 
-# Import helping functions
-. functions.sh
-
 function show_usage() {
   printf "Usage: $0 [optional parameter(s)]\n"
   printf "\n"
@@ -15,11 +12,25 @@ function show_usage() {
   return 0
 }
 
+# Find current location of script file to construct default log folder
+rel_path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
+abs_path=$(pwd)
+if [ $abs_path == "/" ]
+then
+  abs_path="/$rel_path"
+else
+  abs_path=$(pwd)"/$rel_path"
+fi
+
+# Import helping functions
+. $abs_path/functions.sh
+
 # Parameters Definition
 user=$(whoami)
 sys_arch=x86_64
 sig_min=3
-log_dir=/home/$(whoami)/logs/
+log_dir=$abs_path"/logs"
+b_core_update_ok=0
 
 # Check if optional arguments are valid
 while [ ! -z "$1" ];
@@ -59,10 +70,6 @@ do
       echo "No values provided for $1"
       exit 1
     fi
-    if ! [ -d $log_dir ]
-    then
-      echo "directory $log_dir does not exist"
-    fi
     shift
   else
     echo "Invalid argument $1"
@@ -72,9 +79,13 @@ do
   shift
 done
 
-log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
+if [[ ! -d "$log_dir" ]]
+then
+  echo "Directory $log_dir does not exist"
+  exit 1
+fi
 
-b_core_update_ok=0
+log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
 
 echo $(outl)"Checking Bitcoin Core" >> $log
 
@@ -83,8 +94,9 @@ b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
 echo $(outl)"Bitcoin Core current version:" $b_core_v >> $log
 b_core_latest=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||')
 echo $(outl)"Bitcoin Core latest available release:" $b_core_latest >> $log
+common_prefix=$(printf "%s\n%s\n" "$b_core_v" "$b_core_latest" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
 
-if [ $b_core_v == $b_core_latest ]
+if [ $b_core_v == $common_prefix ] || [ $b_core_latest == $common_prefix ]
 then
   echo $(outl)"Version matching, nothing to do" >> $log
 else
@@ -173,7 +185,8 @@ else
   sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-$b_core_latest/bin/*
 
   b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
-  if [ $b_core_v == $b_core_latest ]
+  common_prefix=$(printf "%s\n%s\n" "$b_core_v" "$b_core_latest" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
+  if [ $b_core_v == $common_prefix ] || [ $b_core_latest == $common_prefix ]
   then
     b_core_updated=1
     echo $(outl)"Binaries installation ok, current Bitcoin Core version: $b_core_v" >> $log
