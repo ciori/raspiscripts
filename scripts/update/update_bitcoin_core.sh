@@ -27,7 +27,7 @@ fi
 
 # Parameters Definition
 user=$(whoami)
-sys_arch=x86_64
+sys_arc=x86_64
 sig_min=3
 log_dir=$abs_path"/logs"
 b_core_update_ok=0
@@ -53,7 +53,7 @@ do
     shift
   elif [[ "$1" == "-a" ]] || [[ "$1" == "--sys_arc" ]]; then
     sys_arc=$2
-    if [[ -z $sig_min ]]
+    if [[ -z $sis_arc ]]
     then
       echo "No values provided for $1"
       exit 1
@@ -90,24 +90,23 @@ log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
 echo $(outl)"Checking Bitcoin Core" >> $log
 
 # Checking version and latest release
-b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
+b_core_v=$(bitcoind --version | grep version | sed 's|.*v||;s|[\.00*]*$||')
 echo $(outl)"Bitcoin Core current version:" $b_core_v >> $log
-b_core_latest=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||')
+b_core_latest=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
 echo $(outl)"Bitcoin Core latest available release:" $b_core_latest >> $log
-common_prefix=$(printf "%s\n%s\n" "$b_core_v" "$b_core_latest" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
 
-if [ $b_core_v == $common_prefix ] || [ $b_core_latest == $common_prefix ]
+# Compare versions
+if [[ "$electrum_v" > "$electrum_latest" ]] || [[ "$electrum_v" < "$electrum_latest" ]]
 then
-  echo $(outl)"Version matching, nothing to do" >> $log
-else
   echo $(outl)"Version mismatch, starting update process" >> $log
+
   cd /tmp
 
   # File download
   echo $(outl)"Starting files download" >> $log
 
   # Download tar
-  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/bitcoin-$b_core_latest-$sys_arch-linux-gnu.tar.gz)
+  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/bitcoin-$b_core_latest-$sys_arc-linux-gnu.tar.gz)
   if [ $? == 0 ]
   then
     echo $(outl)$download_res >> $log
@@ -171,7 +170,7 @@ else
 
   # Extraction of tar file
   echo $(outl)"Starting extraction of tar file" >> $log
-  tar_stderr=$({ tar_stdout=$(tar -xvf bitcoin-$b_core_latest-$sys_arch-linux-gnu.tar.gz); } 2>&1)
+  tar_stderr=$({ tar_stdout=$(tar -xvf bitcoin-$b_core_latest-$sys_arc-linux-gnu.tar.gz); } 2>&1)
   if [ -z "$tar_stderr" ]
   then
     echo $(outl)"Tar extraction ok" >> $log
@@ -205,4 +204,6 @@ else
   else
     echo $(errl)"Service bitcoind restart failed, service status is $b_core_status" >> $log
   fi
+else
+  echo $(outl)"Version matching, nothing to do" >> $log
 fi
