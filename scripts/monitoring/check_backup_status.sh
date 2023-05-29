@@ -6,7 +6,7 @@ path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
 # current timestamp
 curr_timestamp=$(date +%s)
 # seconds to look back in time to check the timestamp of completed tasks of backups (currently 1 hour since the script is scheduled each hour)
-lookback_seconds=$((1*60*60))
+lookback_seconds=$((3*60*60))
 
 backup_tasks_out=$(cat /var/log/pve/tasks/index | grep vzdump)
 # format of each line is:
@@ -14,16 +14,16 @@ backup_tasks_out=$(cat /var/log/pve/tasks/index | grep vzdump)
 
 while IFS= read -r line
   do
-  # extracts timestamp
-  hextimestamp=$(echo $line | sed 's|[^:]*:[^:]*:[^:]*:[^:]*:||;s|:.*||')
-  utc_timestamp=$(echo "ibase=16; $hextimestamp" | bc)
-  timestamp=$(date -d @$utc_timestamp "+%F %T")
+  # extracts start and end timestamps of task (start is used as ID by proxmox, end is used to check if the task finished in the last lookback_seconds)
+  hextimestamp_start=$(echo $line | sed 's|[^:]*:[^:]*:[^:]*:[^:]*:||;s|:.*||')
+  hextimestamp_end=$(echo $line | sed 's|.*: ||;s| .*||')
+  utc_timestamp_end=$(echo "ibase=16; $hextimestamp_end" | bc)
 
-  # check if backup ended in the last lookback_seconds since current timestamp
-  if [[ $(($utc_timestamp+$lookback_seconds)) > $curr_timestamp ]]
+  # check if backup task ended in the last lookback_seconds since current timestamp
+  if [[ $(($utc_timestamp_end+$lookback_seconds)) > $curr_timestamp ]]
   then
-    # get task log
-    task_log=$(cat $(find /var/log/pve/tasks -name *$hextimestamp*))
+    # get task log using start timestamp
+    task_log=$(cat $(find /var/log/pve/tasks -name *$hextimestamp_start*))
 
     # parse the log and send notification for each backup
     # track current line and start/end indexes of each backup in the task log
