@@ -6,7 +6,7 @@ path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
 # current timestamp
 curr_timestamp=$(date +%s)
 # seconds to look back in time to check the timestamp of completed tasks of backups (currently 1 hour since the script is scheduled each hour)
-lookback_seconds=$((3*60*60))
+lookback_seconds=$((1*60*60))
 
 backup_tasks_out=$(cat /var/log/pve/tasks/index | grep vzdump)
 # format of each line is:
@@ -32,6 +32,10 @@ while IFS= read -r line
     backup_end=0
     while IFS= read -r line
       do
+      if [[ $line == *"starting new backup job"*"--storage"* ]]
+      then
+        datastore=$(echo $line | sed 's|.*--storage ||;s| .*||')
+      fi
       # get vm id and starting index
       if [[ $line == *"Starting Backup of VM"* ]]
       then
@@ -40,7 +44,7 @@ while IFS= read -r line
       # send ok notification (end index is not necessary because log is not sent on successfull backup)
       elif [[ $line == *"Backup finished at "* ]]
       then
-        send "vm$vm : backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
+        send "vm$vm [ $datastore ]: backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
       # get end index and send error notification
       elif [[ $line == *"Failed at "* ]]
       then
@@ -56,7 +60,7 @@ while IFS= read -r line
           fi
           curr_line2=$(($curr_line2 + 1))
         done <<< $task_log
-        send "vm$vm : backup task failed at $(echo $line | sed 's|.*Failed at ||')$task_err_log"
+        send "vm$vm [ $datastore ]: backup task failed at $(echo $line | sed 's|.*Failed at ||')$task_err_log"
       fi
       curr_line=$(($curr_line + 1))
     done <<< $task_log
