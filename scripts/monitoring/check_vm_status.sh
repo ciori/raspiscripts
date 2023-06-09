@@ -12,6 +12,6 @@ do
 
   if [ $status != "running" ]
   then
-    telegram_bot --text "vm $name \\($id\\) status 🚨: "$status
+    telegram_bot --title "vm $name \\($id\\) status 🚨:" --text $status
   fi
 done <<< $vm_status

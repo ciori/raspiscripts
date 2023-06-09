@@ -25,7 +25,7 @@ do
       is_mountpoint=$(mountpoint $path)
       if [[ $is_mountpoint != *"is a mountpoint"* ]]
       then
-        telegram_bot --text "🚨 datastore $datastore is not available, backups will fail"
+        telegram_bot --title "🚨 datastore $datastore status:" --text "not available, backups will fail"
       fi
     fi
   fi

@@ -3,7 +3,7 @@
 # current timestamp
 curr_timestamp=$(date +%s)
 # seconds to look back in time to check the timestamp of completed tasks of backups (currently 1 hour since the script is scheduled each hour)
-lookback_seconds=$((1*60*60))
+lookback_seconds=$((10*60*60))
 
 backup_tasks_out=$(cat /var/log/pve/tasks/index | grep vzdump)
 # format of each line is:
@@ -41,13 +41,13 @@ while IFS= read -r line
       # send ok notification (end index is not necessary because log is not sent on successfull backup)
       elif [[ $line == *"Backup finished at "* ]]
       then
-        telegram_bot --text "vm$vm \\[ $datastore \\] ✅: backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
+        telegram_bot --title "✅ vm$vm \\[ $datastore \\]:" --text "backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
       # get end index and send error notification
       elif [[ $line == *"Failed at "* ]]
       then
         backup_end=$curr_line
         curr_line2=0
-        task_err_log=$'\n'"Error Log:"
+	task_err_log=""
         # extract log for backup task from backup job log using start/end indexes
         while IFS= read -r line2
         do
@@ -57,8 +57,7 @@ while IFS= read -r line
           fi
           curr_line2=$(($curr_line2 + 1))
         done <<< $task_log
-        echo $task_err_log
-        telegram_bot --text "vm$vm \\[ $datastore \\] ❌: backup task failed at $(echo $line | sed 's|.*Failed at ||')$task_err_log"
+	telegram_bot --title "🚨 vm$vm \\[ $datastore \\]:" --text "backup task failed at $(echo $line | sed 's|.*Failed at ||')\n*Error Log:*_$task_err_log _"
       fi
       curr_line=$(($curr_line + 1))
     done <<< $task_log

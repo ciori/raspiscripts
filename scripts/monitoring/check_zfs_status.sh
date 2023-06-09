@@ -12,9 +12,9 @@ while IFS= read -r line
   fi
 done <<< $zpool_out
 
-if [[ $status == "online" ]]
+if [[ $status != "online" ]]
 then
-  telegram_bot --text "zfs status check: ✅ ONLINE"
+  telegram_bot --title "✅ zfs status check:" --text "ONLINE"
 else
-  telegram_bot --text $'zfs status check: 🚨 ERROR\n'"$zpool_out"
+  telegram_bot --title "🚨 zfs status check:" --text "ERROR\n_$zpool_out _"
 fi
