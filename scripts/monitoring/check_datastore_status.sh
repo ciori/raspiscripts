@@ -1,7 +1,4 @@
 #!/bin/bash
-# compute path and import send message function
-path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
-. $path/send_message.sh
 
 #get datastores
 datastore_list=$(proxmox-backup-manager datastore list --output-format json-pretty)
@@ -28,7 +25,7 @@ do
       is_mountpoint=$(mountpoint $path)
       if [[ $is_mountpoint != *"is a mountpoint"* ]]
       then
-        send "datastore $datastore is not available, backups will fail"
+        telegram_bot --text "🚨 datastore $datastore is not available, backups will fail"
       fi
     fi
   fi

@@ -1,7 +1,4 @@
 #!/bin/bash
-# compute path and import send message function
-path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
-. $path/send_message.sh
 
 # current timestamp
 curr_timestamp=$(date +%s)
@@ -40,11 +37,11 @@ while IFS= read -r line
       if [[ $line == *"Starting Backup of VM"* ]]
       then
         backup_start=$curr_line
-        vm=$(echo $line | sed 's|.*Starting Backup of VM||;s| (qemu)||')
+        vm=$(echo $line | sed 's|.*Starting Backup of VM||;s| (qemu)||;s|(|\\(|;s|)|\\)|')
       # send ok notification (end index is not necessary because log is not sent on successfull backup)
       elif [[ $line == *"Backup finished at "* ]]
       then
-        send "vm$vm [ $datastore ]: backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
+        telegram_bot --text "vm$vm \\[ $datastore \\] ✅: backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
       # get end index and send error notification
       elif [[ $line == *"Failed at "* ]]
       then
@@ -56,11 +53,12 @@ while IFS= read -r line
         do
           if (( $curr_line2 >= $backup_start )) && (( $curr_line2 <= $backup_end ))
           then
-            task_err_log="$task_err_log"$'\n'"$line2"
+            task_err_log="$task_err_log"$(echo '\n'"$line2" | sed 's|(|\\(|;s|)|\\)|')
           fi
           curr_line2=$(($curr_line2 + 1))
         done <<< $task_log
-        send "vm$vm [ $datastore ]: backup task failed at $(echo $line | sed 's|.*Failed at ||')$task_err_log"
+        echo $task_err_log
+        telegram_bot --text "vm$vm \\[ $datastore \\] ❌: backup task failed at $(echo $line | sed 's|.*Failed at ||')$task_err_log"
       fi
       curr_line=$(($curr_line + 1))
     done <<< $task_log

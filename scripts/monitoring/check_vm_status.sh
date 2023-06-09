@@ -1,7 +1,4 @@
 #!/bin/bash
-# compute path and import send message function
-path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
-. $path/send_message.sh
 
 # get status of all vm
 vm_status=$(qm list | grep -v VMID | sed 's| [ ]*| |g;s| ||;s| [^ ]* [^ ]* [^ ]* *$||')
@@ -15,6 +12,6 @@ do
 
   if [ $status != "running" ]
   then
-    send "vm $name ($id) status: "$status
+    telegram_bot --text "vm $name \\($id\\) status 🚨: "$status
   fi
 done <<< $vm_status
