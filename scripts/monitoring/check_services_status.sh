@@ -17,7 +17,7 @@ electrs_enabled=$(systemctl is-enabled electrs.service)
 electrs_status=$(systemctl status electrs.service | grep Active | sed 's|.*Active: ||;s|).*|)|;s|(|\\(|;s|)|\\)|')
 if [ $electrs_enabled == "enabled" ] && [ "$electrs_status" != "active \\(running\\)" ]
 then
-  $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 $(hostname):" --text "Electrum Server is $electrum_status"
+  $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 $(hostname):" --text "Electrum Server is $electrs_status"
 fi
 
 # check btcrpcexplorer status if service is enabled
