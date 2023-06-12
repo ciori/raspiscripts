@@ -1,11 +1,11 @@
 # Monitoring scripts
-send_message.sh  		contains the send message function for yout telegram bot (needs some preliminary steps to be performed, see https://www.cytron.io/tutorial/how-to-create-a-telegram-bot-get-the-api-key-and-chat-id) [deprecated]
+telegram.bot.conf  		contains variables for the telegram.bot script (see https://www.cytron.io/tutorial/how-to-create-a-telegram-bot-get-the-api-key-and-chat-id)
 check_zfs_status.sh		check status of zfs pool and sends a notification
 check_backup_status.sh		check the backup tasks status ended in the last n seconds (default 3600) and sends a notification for each one
 check_vm_status.sh		check if the status ofthe vm and report any that is not running
 check_datastore_status.sh	check if the datastores are available
 check_services_status.sh	check the status of the node services and reports any enabled service which is not running
 
-Requires https://github.com/beep-projects/telegram.bot
-which needs to be installed (follow instructions on project page) and an alias to be configured in .bashrc
-telegram_bot="telegram.bot --bottoken <your_telegram_bot_token> --chatid <your_chat_id>"
+Requirements:
+https://github.com/beep-projects/telegram.bot
+placed in the same folder of the monitoring scripts

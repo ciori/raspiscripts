@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# Telegram bot variables
+BOT_PATH=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
+. $BOT_PATH/telegram.bot.conf
+
 # current timestamp
 curr_timestamp=$(date +%s)
 # seconds to look back in time to check the timestamp of completed tasks of backups (currently 1 hour since the script is scheduled each hour)
-lookback_seconds=$((10*60*60))
+lookback_seconds=$((1*60*60))
 
 backup_tasks_out=$(cat /var/log/pve/tasks/index | grep vzdump)
 # format of each line is:
@@ -41,7 +45,7 @@ while IFS= read -r line
       # send ok notification (end index is not necessary because log is not sent on successfull backup)
       elif [[ $line == *"Backup finished at "* ]]
       then
-        telegram_bot --title "✅ vm$vm \\[ $datastore \\]:" --text "backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
+        $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "✅ vm$vm \\[ $datastore \\]:" --text "backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
       # get end index and send error notification
       elif [[ $line == *"Failed at "* ]]
       then
@@ -57,7 +61,7 @@ while IFS= read -r line
           fi
           curr_line2=$(($curr_line2 + 1))
         done <<< $task_log
-	telegram_bot --title "🚨 vm$vm \\[ $datastore \\]:" --text "backup task failed at $(echo $line | sed 's|.*Failed at ||')\n*Error Log:*_$task_err_log _"
+	$BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 vm$vm \\[ $datastore \\]:" --text "backup task failed at $(echo $line | sed 's|.*Failed at ||')\n*Error Log:*_$task_err_log _"
       fi
       curr_line=$(($curr_line + 1))
     done <<< $task_log

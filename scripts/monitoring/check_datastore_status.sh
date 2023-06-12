@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Telegram bot variables
+BOT_PATH=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
+. $BOT_PATH/telegram.bot.conf
+
 #get datastores
 datastore_list=$(proxmox-backup-manager datastore list --output-format json-pretty)
 
@@ -25,7 +29,7 @@ do
       is_mountpoint=$(mountpoint $path)
       if [[ $is_mountpoint != *"is a mountpoint"* ]]
       then
-        telegram_bot --title "🚨 datastore $datastore status:" --text "not available, backups will fail"
+        $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 datastore $datastore status:" --text "not available, backups will fail"
       fi
     fi
   fi

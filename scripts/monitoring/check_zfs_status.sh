@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Telegram bot variables
+BOT_PATH=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
+. $BOT_PATH/telegram.bot.conf
+
 zpool_out=$(zpool status)
 
 # boolean flag to check errors
@@ -12,9 +16,9 @@ while IFS= read -r line
   fi
 done <<< $zpool_out
 
-if [[ $status != "online" ]]
+if [[ $status == "online" ]]
 then
-  telegram_bot --title "✅ zfs status check:" --text "ONLINE"
+  $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "✅ zfs status check:" --text "ONLINE"
 else
-  telegram_bot --title "🚨 zfs status check:" --text "ERROR\n_$zpool_out _"
+  $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 zfs status check:" --text "ERROR\n_$zpool_out _"
 fi

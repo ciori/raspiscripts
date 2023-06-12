@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Telegram bot variables
+BOT_PATH=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
+. $BOT_PATH/telegram.bot.conf
+
 # get status of all vm
 vm_status=$(qm list | grep -v VMID | sed 's| [ ]*| |g;s| ||;s| [^ ]* [^ ]* [^ ]* *$||')
 
@@ -12,6 +16,6 @@ do
 
   if [ $status != "running" ]
   then
-    telegram_bot --title "vm $name \\($id\\) status 🚨:" --text $status
+    $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "vm $name \\($id\\) status 🚨:" --text $status
   fi
 done <<< $vm_status
