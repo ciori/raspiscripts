@@ -42,10 +42,14 @@ while IFS= read -r line
       then
         backup_start=$curr_line
         vm=$(echo $line | sed 's|.*Starting Backup of VM||;s| (qemu)||;s|(|\\(|;s|)|\\)|')
+        vm_name=$(qm config $vm | grep '^name:' | awk '{print $2}')
       # send ok notification (end index is not necessary because log is not sent on successfull backup)
+      elif [[ $line == *"Finished Backup of VM"* ]]
+      then
+        duration=$(echo $line | sed 's|.*(||;s|)||')
       elif [[ $line == *"Backup finished at "* ]]
       then
-        $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "✅ vm$vm \\[ $datastore \\]:" --text "backup task finished at $(echo $line | sed 's|.*Backup finished at ||')"
+        $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "✅ $vm_name \\[ $datastore \\]:" --text "backup task finished at $(echo $line | sed 's|.*Backup finished at ||'). Duration: $duration"
       # get end index and send error notification
       elif [[ $line == *"Failed at "* ]]
       then
@@ -61,7 +65,7 @@ while IFS= read -r line
           fi
           curr_line2=$(($curr_line2 + 1))
         done <<< $task_log
-	$BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 vm$vm \\[ $datastore \\]:" --text "backup task failed at $(echo $line | sed 's|.*Failed at ||')\n*Error Log:*_$task_err_log _"
+	$BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 $vm_name \\[ $datastore \\]:" --text "backup task failed at $(echo $line | sed 's|.*Failed at ||')\n*Error Log:*_$task_err_log _"
       fi
       curr_line=$(($curr_line + 1))
     done <<< $task_log
