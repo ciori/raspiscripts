@@ -42,7 +42,7 @@ while IFS= read -r line
       then
         backup_start=$curr_line
         vm=$(echo $line | sed 's|.*Starting Backup of VM||;s| (qemu)||;s|(|\\(|;s|)|\\)|')
-        vm_name=$(qm config $vm | grep '^name:' | awk '{print $2}')
+        vm_name=$(/usr/sbin/qm config $vm | grep '^name:' | awk '{print $2}')
       # send ok notification (end index is not necessary because log is not sent on successfull backup)
       elif [[ $line == *"Finished Backup of VM"* ]]
       then
