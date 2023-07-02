@@ -9,8 +9,8 @@ function errl {
 }
 
 function parse_sig_log() {
-  count=$1
-  st=$2
+  count=0
+  st=$1
 
   while IFS= read -r line
     do
@@ -20,14 +20,14 @@ function parse_sig_log() {
         sig_name="Good signature from "${sig_name%\"*}
       elif [[ $line == *"WARNING: This key is not certified with a trusted signature!"* ]]
       then
-        warning_found=1
+        warning_found=true
       elif [[ $line == *"Primary key fingerprint:"* ]]
       then
         key_fingerprint=${line#*:}
         echo $(outl)$sig_name >> $log
         echo $(outl)"Key fingerprint "$key_fingerprint >> $log
         count=$(($count+1))
-        if [ $warning_found == 1 ]
+        if $warning_found
         then
           echo $(outl)"WARNING: This key is not certified with a trusted signature!" >> $log
           warning_found=0

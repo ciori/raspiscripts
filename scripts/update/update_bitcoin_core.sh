@@ -96,17 +96,17 @@ b_core_latest=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/l
 echo $(outl)"Bitcoin Core latest available release:" $b_core_latest >> $log
 
 # Compare versions
-if [[ "$electrum_v" > "$electrum_latest" ]] || [[ "$electrum_v" < "$electrum_latest" ]]
+if [[ "$b_core_v" > "$b_core_latest" ]] || [[ "$b_core_v" < "$b_core_latest" ]]
 then
   echo $(outl)"Version mismatch, starting update process" >> $log
-
+  b_core_tag=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||')
   cd /tmp
 
   # File download
   echo $(outl)"Starting files download" >> $log
 
   # Download tar
-  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/bitcoin-$b_core_latest-$sys_arc-linux-gnu.tar.gz)
+  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz)
   if [ $? == 0 ]
   then
     echo $(outl)$download_res >> $log
@@ -115,7 +115,7 @@ then
   fi
 
   # Download checksum
-  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/SHA256SUMS)
+  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/SHA256SUMS)
   if [ $? == 0 ]
   then
     echo $(outl)$download_res >> $log
@@ -124,7 +124,7 @@ then
   fi
 
   # Download signature
-  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_latest/SHA256SUMS.asc)
+  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/SHA256SUMS.asc)
   if [ $? == 0 ]
   then
     echo $(outl)$download_res >> $log
@@ -135,7 +135,7 @@ then
   # Checksum verification
   echo $(outl)"Starting checksum verification" >> $log
   checksum_ver=$(sha256sum --ignore-missing --check SHA256SUMS)
-  if [ "$checksum_ver" == "bitcoin-${b_core_latest}-${sys_arch}-linux-gnu.tar.gz: OK" ]
+  if [ "$checksum_ver" == "bitcoin-${b_core_tag}-${sys_arc}-linux-gnu.tar.gz: OK" ]
   then
     echo $(outl)"Checksum verification ok" >> $log
   else
@@ -145,22 +145,18 @@ then
 
   # Signature verification
   echo $(outl)"Starting signature verification" >> $log
-  sig_ver_stderr=$({ sig_ver_stdout=$(gpg --verify SHA256SUMS.asc); } 2>&1)
+  sig_ver_out=$({ sig_ver_stdout=$(gpg --verify SHA256SUMS.asc); } 2>&1)
 
   sig_count=0
 
-  # Parsing signature verification output log
-  parse_sig_log $sig_count "$sig_ver_stderr"
-  sig_count=$?
-
-  # Parsing signature verification error log
-  parse_sig_log $sig_count "$sig_ver_stderr"
+  # Parsing signature verification output
+  parse_sig_log "$sig_ver_out"
   sig_count=$?
 
   echo $(outl)$sig_count" signatures found" >> $log
 
   # Signature number check
-  if [ $sig_count -lt $sig_min ]
+  if [[ $sig_count -lt $sig_min ]]
   then
     echo $(errl)"Minimum signature count not reached("$sig_min"), update aborted" >> $log
     exit 1
@@ -168,10 +164,14 @@ then
     echo $(outl)"Minimum signature count reached" >> $log
   fi
 
+  # Clean any previous extracted
+  if [ ! -d "bitcoin-$b_core_tag/" ]; then
+    rm -R "bitcoin-$b_core_tag/"
+  fi
   # Extraction of tar file
   echo $(outl)"Starting extraction of tar file" >> $log
-  tar_stderr=$({ tar_stdout=$(tar -xvf bitcoin-$b_core_latest-$sys_arc-linux-gnu.tar.gz); } 2>&1)
-  if [ -z "$tar_stderr" ]
+  tar -xf bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz
+  if [ $? ]
   then
     echo $(outl)"Tar extraction ok" >> $log
   else
@@ -181,7 +181,7 @@ then
 
   # Installation of binaries
   echo $(outl)"Starting binaries installation" >> $log
-  sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-$b_core_latest/bin/*
+  sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-$b_core_tag/bin/*
 
   b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
   common_prefix=$(printf "%s\n%s\n" "$b_core_v" "$b_core_latest" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
