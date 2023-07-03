@@ -79,9 +79,10 @@ do
   shift
 done
 
-if [[ ! -d "$log_dir" ]]
+sudo mkdir -p $log_dir
+if [ ! $? ]
 then
-  echo "Directory $log_dir does not exist"
+  echo "Cannot create log directory $log_dir" >> $log
   exit 1
 fi
 
@@ -103,6 +104,37 @@ then
   cd /tmp
 
   # File download
+  echo $(outl)"Cleanup of previously downloaded files" >> $log
+
+  # Clean any previously downloaded files
+  if [ -z bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz ]
+  then
+    rm -R bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz
+    if [ ! $? ]
+    then
+      echo "Cannot cleanup file bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz" >> $log
+      exit 1
+    fi
+  fi
+  if [ -z SHA256SUMS ]
+  then
+    rm -R SHA256SUMS
+    if [ ! $? ]
+    then
+      echo "Cannot cleanup file SHA256SUMS" >> $log
+      exit 1
+    fi
+  fi
+  if [ -z SHA256SUMS.asc ]
+  then
+    rm -R SHA256SUMS.asc"
+    if [ ! $? ]
+    then
+      echo "Cannot cleanup file SHA256SUMS.asc" >> $log
+      exit 1
+    fi
+  fi
+
   echo $(outl)"Starting files download" >> $log
 
   # Download tar
@@ -132,10 +164,12 @@ then
     echo $(errl)$download_res >> $log
   fi
 
+  echo $(outl)"Files downloaded" >> $log
+
   # Checksum verification
   echo $(outl)"Starting checksum verification" >> $log
-  checksum_ver=$(sha256sum --ignore-missing --check SHA256SUMS)
-  if [ "$checksum_ver" == "bitcoin-${b_core_tag}-${sys_arc}-linux-gnu.tar.gz: OK" ]
+  sha256sum --ignore-missing --check SHA256SUMS
+  if [ $? ]
   then
     echo $(outl)"Checksum verification ok" >> $log
   else
@@ -164,9 +198,15 @@ then
     echo $(outl)"Minimum signature count reached" >> $log
   fi
 
-  # Clean any previous extracted
-  if [ ! -d "bitcoin-$b_core_tag/" ]; then
+  # Clean any previously extracted folder
+  if [ -d "bitcoin-$b_core_tag/" ]
+  then
     rm -R "bitcoin-$b_core_tag/"
+    if [ ! $? ]
+    then
+      echo "Cannot cleanup previously extracted folder bitcoin-$b_core_tag/" >> $log
+      exit 1
+    fi
   fi
   # Extraction of tar file
   echo $(outl)"Starting extraction of tar file" >> $log

@@ -49,23 +49,22 @@ do
   shift
 done
 
-if [ ! -d "$log_dir" ]
+sudo mkdir -p $log_dir
+if [ ! $? ]
 then
-  echo "Directory $log_dir does not exist"
+  echo "Cannot create log directory $log_dir" >> $log
   exit 1
 fi
 
 log=$log_dir/update_electrum_$(date +"%Y%m%d_T_%H%M%S").log
 
-echo $(outl)"Checking Electrum" >> $log
+echo $(outl)"Checking Electrum Server" >> $log
 
 # Checking version and latest release
 electrum_v=$(electrs --version | sed 's|.*v||;s|[\.00*]*$||')
-electrum_v="1"
 echo $(outl)"Electrum Server current version:" $electrum_v >> $log
 electrum_latest=$(curl -sL https://api.github.com/repos/romanz/electrs/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
 echo $(outl)"Electrum Server latest available release:" $electrum_latest >> $log
-
 # Compare versions
 if [[ "$electrum_v" > "$electrum_latest" ]] || [[ "$electrum_v" < "$electrum_latest" ]]
 then
@@ -118,41 +117,52 @@ then
   cargo clean -q
 
   build_out=$(cargo build -q --locked --release)
-
-  echo $build_out
-
-  #if [ -z "$tar_stderr" ]
-  #then
-  #  echo $(outl)"Tar extraction ok" >> $log
-  #else
-  #  echo $(errl)"Tar extraction error, update aborted" >> $log
-  #  exit 1
-  #fi
+  if [ $? ]
+  then
+    echo $(outl)"Electrum Server builded correctly" >> $log
+  else
+    echo $(errl)"Error building Electrum Server" >> $log
+    exit 1
+  fi
 
   # Installation of binaries
-  #echo $(outl)"Starting binaries installation" >> $log
-  #sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-$b_core_latest/bin/*
+  echo $(outl)"Starting binaries installation" >> $log
+  sudo cp /usr/local/bin/electrs /usr/local/bin/electrs-old
+  if [ $? ]
+  then
+    echo $(outl)"Current Electrum Server backup created" >> $log
+  else
+    echo $(errl)"Error creating current Electrum Server backup" >> $log
+    exit 1
+  fi
 
-  #b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
-  #if [ $b_core_v == $b_core_latest ]
-  #then
-  #  b_core_updated=1
-  #  echo $(outl)"Binaries installation ok, current Bitcoin Core version: $b_core_v" >> $log
-  #else
-  #  echo $(errl)"Binaries installation error" >> $log
-  #  exit 1
-  #fi
+  sudo install -m 0755 -o root -g root -t /usr/local/bin ./target/release/electrs
+
+  echo $(outl)"Electrum Server current version:" $electrum_v >> $log
+  electrum_latest=$(curl -sL https://api.github.com/repos/romanz/electrs/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
+  echo $(outl)"Electrum Server latest available release:" $electrum_latest >> $log
+
+  electrum_v=$(electrs --version | grep version | sed 's|.* v||')
+  common_prefix=$(printf "%s\n%s\n" "$electrum_v" "$electrum_latest" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
+  if [ $electrum_v == $common_prefix ] || [ $electrum_latest == $common_prefix ]
+  then
+    electrum_updated=1
+    echo $(outl)"Binaries installation ok, current Electrum Server version: $electrum_v" >> $log
+  else
+    echo $(errl)"Binaries installation error" >> $log
+    exit 1
+  fi
 
   # Service restart
-  #echo $(outl)"Restarting service bitcoind" >> $log
-  #sudo systemctl restart bitcoind
-  #b_core_status=$(sudo systemctl status bitcoind.service | grep Active | sed 's|.*Active:.*(||;s|).*||')
-  #if [ $b_core_status == "running" ]
-  #then
-  #  echo $(outl)"Service bitcoind restarted correctly, service is now running" >> $log
-  #else
-  #  echo $(errl)"Service bitcoind restart failed, service status is $b_core_status" >> $log
-  #fi
+  echo $(outl)"Restarting service electrs" >> $log
+  sudo systemctl restart electrs
+  electrum_status=$(sudo systemctl status electrs.service | grep Active | sed 's|.*Active:.*(||;s|).*||')
+  if [ $electrum_status == "running" ]
+  then
+    echo $(outl)"Service electrs restarted correctly, service is now running" >> $log
+  else
+    echo $(errl)"Service electrs restart failed, service status is $electrum_status" >> $log
+  fi
 else
   echo $(outl)"Version matching, nothing to do" >> $log
 fi
