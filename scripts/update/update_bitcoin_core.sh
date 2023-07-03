@@ -4,10 +4,10 @@ function show_usage() {
   printf "Usage: $0 [optional parameter(s)]\n"
   printf "\n"
   printf "Options:\n"
-  printf " -s | --sig_min\tminimum number of valid signatures accepted [3]\n"
-  printf " -a | --sys_arc\tsystem architecture, valid options: x86_64, aarch64, arm [x86_64]\n"
-  printf " -d | --log_dir\tpath to save logs [/home/$(whoami)/]\n"
-  printf " -h | --help\t\\ttshow usage\n"
+  printf " -s | --sig-min\tminimum number of valid signatures accepted [3]\n"
+  printf " -a | --sys-arc\tsystem architecture, valid options: x86_64, aarch64, arm [x86_64]\n"
+  printf " -d | --log-dir\tpath to save logs [/home/$(whoami)/]\n"
+  printf " -h | --help\tshow usage\n"
 
   return 0
 }
@@ -37,7 +37,8 @@ while [ ! -z "$1" ];
 do
   if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
     show_usage
-  elif [[ "$1" == "-s" ]] || [[ "$1" == "--sig_min" ]]; then
+    exit 0
+  elif [[ "$1" == "-s" ]] || [[ "$1" == "--sig-min" ]]; then
     sig_min=$2
     if [[ -z $sig_min ]]
     then
@@ -51,7 +52,7 @@ do
       exit 1
     fi
     shift
-  elif [[ "$1" == "-a" ]] || [[ "$1" == "--sys_arc" ]]; then
+  elif [[ "$1" == "-a" ]] || [[ "$1" == "--sys-arc" ]]; then
     sys_arc=$2
     if [[ -z $sis_arc ]]
     then
@@ -63,7 +64,7 @@ do
       echo "Invalid input $sys_arc, $1 valid values are: x86_64, aarch64, arm"
     fi
     shift
-  elif [[ "$1" == "-d" ]] || [[ "$1" == "--log_dir" ]]; then
+  elif [[ "$1" == "-d" ]] || [[ "$1" == "--log-dir" ]]; then
     log_dir=$2
     if [[ -z $log_dir ]]
     then
@@ -80,11 +81,7 @@ do
 done
 
 sudo mkdir -p $log_dir
-if [ ! $? ]
-then
-  echo "Cannot create log directory $log_dir" >> $log
-  exit 1
-fi
+if [[ $? == 1 ]]; then echo "Cannot create log directory $log_dir" >> $log; exit 1; fi
 
 log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
 
@@ -110,7 +107,7 @@ then
   if [ -z bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz ]
   then
     rm -R bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz
-    if [ ! $? ]
+    if [[ $? == 1 ]]
     then
       echo "Cannot cleanup file bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz" >> $log
       exit 1
@@ -119,27 +116,19 @@ then
   if [ -z SHA256SUMS ]
   then
     rm -R SHA256SUMS
-    if [ ! $? ]
-    then
-      echo "Cannot cleanup file SHA256SUMS" >> $log
-      exit 1
-    fi
+    if [[ $? == 1 ]]; then echo "Cannot cleanup file SHA256SUMS" >> $log; exit 1; fi
   fi
   if [ -z SHA256SUMS.asc ]
   then
     rm -R SHA256SUMS.asc"
-    if [ ! $? ]
-    then
-      echo "Cannot cleanup file SHA256SUMS.asc" >> $log
-      exit 1
-    fi
+    if [[ $? == 1]]; then echo "Cannot cleanup file SHA256SUMS.asc" >> $log; exit 1; fi
   fi
 
   echo $(outl)"Starting files download" >> $log
 
   # Download tar
   download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz)
-  if [ $? == 0 ]
+  if [[ $? == 0 ]]
   then
     echo $(outl)$download_res >> $log
   else
@@ -148,7 +137,7 @@ then
 
   # Download checksum
   download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/SHA256SUMS)
-  if [ $? == 0 ]
+  if [[ $? == 0 ]]
   then
     echo $(outl)$download_res >> $log
   else
@@ -157,7 +146,7 @@ then
 
   # Download signature
   download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/SHA256SUMS.asc)
-  if [ $? == 0 ]
+  if [[ $? == 0 ]]
   then
     echo $(outl)$download_res >> $log
   else
@@ -169,7 +158,7 @@ then
   # Checksum verification
   echo $(outl)"Starting checksum verification" >> $log
   sha256sum --ignore-missing --check SHA256SUMS
-  if [ $? ]
+  if [[ $? == 0 ]]
   then
     echo $(outl)"Checksum verification ok" >> $log
   else
@@ -202,16 +191,12 @@ then
   if [ -d "bitcoin-$b_core_tag/" ]
   then
     rm -R "bitcoin-$b_core_tag/"
-    if [ ! $? ]
-    then
-      echo "Cannot cleanup previously extracted folder bitcoin-$b_core_tag/" >> $log
-      exit 1
-    fi
+    if [[ $? == 1 ]]; then echo "Cannot cleanup previously extracted folder bitcoin-$b_core_tag/" >> $log; exit 1; fi
   fi
   # Extraction of tar file
   echo $(outl)"Starting extraction of tar file" >> $log
   tar -xf bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz
-  if [ $? ]
+  if [[ $? == 0 ]]
   then
     echo $(outl)"Tar extraction ok" >> $log
   else

@@ -4,8 +4,9 @@ function show_usage() {
   printf "Usage: $0 [optional parameter(s)]\n"
   printf "\n"
   printf "Options:\n"
-  printf " -d | --log-dir\tpath to save logs [/home/$(whoami)/]\n"
-  printf " -h | --help\tshow usage\n"
+  printf " -u | --service-user\tuser of btcrpcexplorer service [btcrpcexplorer]\n"
+  printf " -d | --log-dir\t\tpath to save logs [/home/$(whoami)/]\n"
+  printf " -h | --help\t\tshow usage\n"
 
   return 0
 }
@@ -25,8 +26,9 @@ fi
 
 # Parameters Definition
 user=$(whoami)
+service_user="btcrpcexplorer"
 log_dir=$abs_path"/logs"
-electrum_update_ok=0
+btcrpcexplorer_update_ok=0
 
 # Check if optional arguments are valid
 while [ ! -z "$1" ];
@@ -34,6 +36,21 @@ do
   if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
     show_usage
     exit 0
+  elif [[ "$1" == "-u" ]] || [[ "$1" == "--service-user" ]]; then
+    service_user=$2
+    echo $service_user
+    if [[ -z $service_user ]]
+    then
+      echo "No values provided for $1"
+      exit 1
+    fi
+    id $service_user > /dev/null 2>&1
+    if [[ $? == 1 ]]
+    then
+      echo "User $service_user does not exists"
+      exit 1
+    fi
+    shift
   elif [[ "$1" == "-d" ]] || [[ "$1" == "--log-dir" ]]; then
     log_dir=$2
     if [[ -z $log_dir ]]
@@ -51,17 +68,21 @@ do
 done
 
 sudo mkdir -p $log_dir
-if [[ $? == 1 ]]; then echo "Cannot create log directory $log_dir" >> $log; exit 1; fi
+if [[ $? == 1 ]]
+then
+  echo "Cannot create log directory $log_dir" >> $log
+  exit 1
+fi
 
 log=$log_dir/update_electrum_$(date +"%Y%m%d_T_%H%M%S").log
 
-echo $(outl)"Checking Electrum Server" >> $log
+echo $(outl)"Checking BTC RPC Explorer" >> $log
 
 # Checking version and latest release
-electrum_v=$(electrs --version | sed 's|.*v||;s|[\.00*]*$||')
-echo $(outl)"Electrum Server current version:" $electrum_v >> $log
-electrum_latest=$(curl -sL https://api.github.com/repos/romanz/electrs/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
-echo $(outl)"Electrum Server latest available release:" $electrum_latest >> $log
+explorer_v=$(sudo su - btcrpcexplorer -c "btc-rpc-explorer/bin/cli.js --version" | sed 's|.*v||;s|[\.00*]*$||')
+echo $(outl)"BTC RPC Explorer current version:" $electrum_v >> $log
+explorer_latest=$(curl -sL https://api.github.com/repos/janoside/btc-rpc-explorer/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
+echo $(outl)"BTC RPC Explorer latest available release:" $electrum_latest >> $log
 # Compare versions
 if [[ "$electrum_v" > "$electrum_latest" ]] || [[ "$electrum_v" < "$electrum_latest" ]]
 then
@@ -69,13 +90,11 @@ then
 
   # Clean and update local source code to get latest release
   echo $(outl)"Updating local repository" >> $log
+  : '
   cd /home/$user/rust/electrs
-  git clean -xfd --quiet
-  if [[ $? == 1 ]]; then echo $(errl)"Error on git clean command" >> $log; exit 1; fi
-  git fetch --quiet
-  if [[ $? == 1 ]]; then echo $(errl)"Error on git fetch command" >> $log; exit 1; fi
+  git clean -xfd
+  git fetch
   electrum_git_latest=$(git tag | sort --version-sort | tail -n 1)
-  if [[ $? == 1 ]]; then echo $(errl)"Error on git tag command" >> $log; exit 1; fi
 
   # Signature verification
   echo $(outl)"Starting signature verification" >> $log
@@ -163,6 +182,7 @@ then
   else
     echo $(errl)"Service electrs restart failed, service status is $electrum_status" >> $log
   fi
+  '
 else
   echo $(outl)"Version matching, nothing to do" >> $log
 fi
