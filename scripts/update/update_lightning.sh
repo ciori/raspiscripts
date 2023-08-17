@@ -16,6 +16,8 @@ function show_usage() {
 # Cleanup function
 function cleanup {
   echo $(outl)"Update Aborted" >> $log
+  echo $(outl)"Restarting lnd service" >> $log
+  sudo systemctl start lnd
 }
 
 # Find current location of script file to construct default log folder
@@ -33,10 +35,10 @@ fi
 
 # Parameters Definition
 user=$(whoami)
-sys_arc=x86_64
-sig_min=3
+sys_arc=amd64
+sig_min=1
 log_dir=$abs_path"/logs"
-b_core_update_ok=0
+lnd_update_ok=0
 
 # Check if optional arguments are valid
 while [ ! -z "$1" ];
@@ -52,8 +54,8 @@ do
     shift
   elif [[ "$1" == "-a" ]] || [[ "$1" == "--sys-arc" ]]; then
     sys_arc=$2
-    if [[ -z $sis_arc ]]; then echo "No values provided for $1"; exit 1; fi
-    if ! ([[ $sys_arc == "x86_64" ]] || [[ $sys_arc == "aarch64" ]] || [[ $sys_arc == "arm" ]]); then echo "Invalid input $sys_arc, $1 valid values are: x86_64, aarch64, arm"; exit 1; fi
+    if [[ -z $sys_arc ]]; then echo "No values provided for $1"; exit 1; fi
+    if ! ([[ $sys_arc == "amd64" ]] || [[ $sys_arc == "arm64" ]]); then echo "Invalid input $sys_arc, $1 valid values are: amd64, arm64"; exit 1; fi
     shift
   elif [[ "$1" == "-d" ]] || [[ "$1" == "--log-dir" ]]; then
     log_dir=$2
@@ -73,75 +75,82 @@ trap cleanup ERR
 # Create log directory
 sudo mkdir -p $log_dir
 if [[ $? != 0 ]]; then echo "Cannot create log directory $log_dir" >> $log; exit 1; fi
-log=$log_dir/update_bitcoin_core_$(date +"%Y%m%d_T_%H%M%S").log
+log=$log_dir/update_lightning_$(date +"%Y%m%d_T_%H%M%S").log
 
-echo $(outl)"Checking Bitcoin Core" >> $log
+echo $(outl)"Checking Lightning Client LND" >> $log
 
 # Check version and latest release
-b_core_v=$(bitcoind --version | grep version | sed 's|.*v||;s|[\.00*]*$||')
-echo $(outl)"Bitcoin Core current version:" $b_core_v >> $log
-b_core_latest=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
-echo $(outl)"Bitcoin Core latest available release:" $b_core_latest >> $log
+lnd_v=$(lnd --version | grep version | sed 's|.*v||;s|[\.00*]*$||')
+echo $(outl)"Lightning Network current version:" $lnd_v >> $log
+lnd_latest=$(curl -sL https://api.github.com/repos/lightningnetwork/lnd/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
+echo $(outl)"Lightning Network latest available release:" $lnd_latest >> $log
 
 # Compare versions
-if [[ "$b_core_v" > "$b_core_latest" ]] || [[ "$b_core_v" < "$b_core_latest" ]]
+if [[ "$lnd_v" > "$lnd_latest" ]] || [[ "$lnd_v" < "$lnd_latest" ]]
 then
   echo $(outl)"Version mismatch, starting update process" >> $log
-  b_core_tag=$(curl -sL https://api.github.com/repos/bitcoin/bitcoin/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||')
+  lnd_tag=$(curl -sL https://api.github.com/repos/lightningnetwork/lnd/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||')
   cd /tmp
+
+  # Stopping service
+  echo $(outl)"Stopping lnd service" >> $log
+  sudo systemctl stop lnd
+  lnd_status=$(systemctl is-active lnd.service)
+  if [ "$lnd_status" == "active" ]; then echo $(errl)"Impossible to stop lnd service, service is $lnd_status" >> $log; exit 1; fi
+  echo $(outl)"Service lnd stopped, service is $lnd_status" >> $log
 
   # Clean any previously downloaded files
   echo $(outl)"Cleanup of previously downloaded files" >> $log
 
-  if [ -f bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz ]
+  if [ -f lnd-linux-$sys_arc-v$lnd_tag.tar.gz ]
   then
-    rm -R bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz
-    if [[ $? != 0 ]]; then echo "Cannot cleanup file bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz" >> $log; exit 1; fi
+    rm -R lnd-linux-$sys_arc-v$lnd_tag.tar.gz
+    if [[ $? != 0 ]]; then echo "Cannot cleanup file lnd-linux-$sys_arc-v$lnd_tag.tar.gz" >> $log; exit 1; fi
   fi
-  if [ -f SHA256SUMS ]
+  if [ -f manifest-v$lnd_tag.txt ]
   then
-    rm -R SHA256SUMS
-    if [[ $? != 0 ]]; then echo "Cannot cleanup file SHA256SUMS" >> $log; exit 1; fi
+    rm -R manifest-v$lnd_tag.txt
+    if [[ $? != 0 ]]; then echo "Cannot cleanup file manifest-v$lnd_tag.txt" >> $log; exit 1; fi
   fi
-  if [ -f SHA256SUMS.asc ]
+  if [ -f manifest-roasbeef-v$lnd_tag.sig ]
   then
-    rm -R SHA256SUMS.asc
-    if [[ $? != 0 ]]; then echo "Cannot cleanup file SHA256SUMS.asc" >> $log; exit 1; fi
+    rm -R manifest-roasbeef-v$lnd_tag.sig
+    if [[ $? != 0 ]]; then echo "Cannot cleanup file manifest-roastbeef-v$lnd_tag.sig" >> $log; exit 1; fi
   fi
 
   # Clean any previously extracted folder
-  if [ -d "bitcoin-$b_core_tag/" ]
+  if [ -d "lnd-linux-$sys_arc-v$lnd_tag/" ]
   then
-    rm -R "bitcoin-$b_core_tag/"
-    if [[ $? != 0 ]]; then echo "Cannot cleanup previously extracted folder bitcoin-$b_core_tag/" >> $log; exit 1; fi
+    rm -R "lnd-linux-$sys_arc-v$lnd_tag/"
+    if [[ $? != 0 ]]; then echo "Cannot cleanup previously extracted folder lnd-linux-$sys_arc-v$lnd_tag/" >> $log; exit 1; fi
   fi
 
   # File download
   echo $(outl)"Starting files download" >> $log
 
   # Download tar
-  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz)
+  download_res=$(download_file https://github.com/lightningnetwork/lnd/releases/download/v$lnd_tag/lnd-linux-$sys_arc-v$lnd_tag.tar.gz)
   if [[ $? == 0 ]]; then echo $(outl)$download_res >> $log; else echo $(errl)$download_res >> $log; fi
 
-  # Download checksum
-  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/SHA256SUMS)
+  # Download manifest
+  download_res=$(download_file https://github.com/lightningnetwork/lnd/releases/download/v$lnd_tag/manifest-v$lnd_tag.txt)
   if [[ $? == 0 ]]; then echo $(outl)$download_res >> $log; else echo $(errl)$download_res >> $log; fi
 
   # Download signature
-  download_res=$(download_file https://bitcoincore.org/bin/bitcoin-core-$b_core_tag/SHA256SUMS.asc)
+  download_res=$(download_file https://github.com/lightningnetwork/lnd/releases/download/v$lnd_tag/manifest-roasbeef-v$lnd_tag.sig)
   if [[ $? == 0 ]]; then echo $(outl)$download_res >> $log; else echo $(errl)$download_res >> $log; fi
 
   echo $(outl)"Files downloaded" >> $log
 
   # Checksum verification
   echo $(outl)"Starting checksum verification" >> $log
-  sha256sum --quiet --ignore-missing --check SHA256SUMS
+  sha256sum --quiet --ignore-missing --check manifest-v$lnd_tag.txt
   if [[ $? != 0 ]]; then echo $(errl)"Checksum verification error" >> $log; exit 1; fi
   echo $(outl)"Checksum verification ok" >> $log
 
   # Signature verification
   echo $(outl)"Starting signature verification" >> $log
-  sig_ver_out=$({ sig_ver_stdout=$(gpg --verify SHA256SUMS.asc); } 2>&1)
+  sig_ver_out=$({ sig_ver_stdout=$(gpg --verify manifest-roasbeef-v$lnd_tag.sig manifest-v$lnd_tag.txt); } 2>&1)
 
   sig_count=0
 
@@ -162,34 +171,34 @@ then
 
   # Extraction of tar file
   echo $(outl)"Starting extraction of tar file" >> $log
-  tar -xf bitcoin-$b_core_tag-$sys_arc-linux-gnu.tar.gz
+  tar -xf lnd-linux-$sys_arc-v$lnd_tag.tar.gz
   if [[ $? != 0 ]]; then echo $(errl)"Tar extraction error" >> $log; exit 1; fi
   echo $(outl)"Tar extraction ok" >> $log
 
   # Installation of binaries
   echo $(outl)"Starting binaries installation" >> $log
-  sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-$b_core_tag/bin/*
+  sudo install -m 0755 -o root -g root -t /usr/local/bin lnd-linux-$sys_arc-v$lnd_tag/*
 
-  b_core_v=$(bitcoind --version | grep version | sed 's|.* v||')
-  common_prefix=$(printf "%s\n%s\n" "$b_core_v" "$b_core_latest" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
-  if [ $b_core_v == $common_prefix ] || [ $b_core_latest == $common_prefix ]
+  lnd_v=$(lnd --version | grep version | sed 's|.* v||')
+  common_prefix=$(printf "%s\n%s\n" "$lnd_v" "$lnd_latest" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
+  if [[ $lnd_v == $common_prefix ] || [ $lnd_latest == $common_prefix ]]
   then
-    b_core_updated=1
-    echo $(outl)"Binaries installation ok, current Bitcoin Core version: $b_core_v" >> $log
+    lnd_updated=1
+    echo $(outl)"Binaries installation ok, current LND client version: $lnd_v" >> $log
   else
     echo $(errl)"Binaries installation error" >> $log
     exit 1
   fi
 
   # Service restart
-  echo $(outl)"Restarting service bitcoind" >> $log
-  sudo systemctl restart bitcoind
-  b_core_status=$(sudo systemctl status bitcoind.service | grep Active | sed 's|.*Active: ||;s|).*|)|')
-  if [ "$b_core_status" == "active (running)" ]
+  echo $(outl)"Starting service lnd" >> $log
+  sudo systemctl start lnd
+  lnd_status=$(systemctl is-active lnd.service)
+  if [ "$lnd_status" == "active" ]
   then
-    echo $(outl)"Service bitcoind restarted correctly, service is $b_core_status" >> $log
+    echo $(outl)"Service lnd started correctly, service is now running" >> $log
   else
-    echo $(errl)"Service bitcoind restart failed, service status is $b_core_status" >> $log
+    echo $(errl)"Service lnd start failed, service status is $lnd_status" >> $log
   fi
 else
   echo $(outl)"Version matching, nothing to do" >> $log
