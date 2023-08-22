@@ -1,125 +1,89 @@
 #! /bin/bash
 
-# Show usage function
-function show_usage() {
-  printf "Usage: $0 [optional parameter(s)]\n"
-  printf "\n"
-  printf "Options:\n"
-  printf " -u | --service-user\tuser of btcrpcexplorer service [$service_user]\n"
-  printf " -d | --log-dir\t\tpath to save logs [$log_dir]\n"
-  printf " -h | --help\t\tshow usage\n"
-
-  return 0
-}
-
-# Cleanup function
-function cleanup {
-  echo $(outl)"Update Aborted" >> $log
-  echo $(outl)"Restarting btcrpcexplorer service" >> $log
-  sudo systemctl start btcrpcexplorer
-}
-
-# Find current location of script file to construct default log folder
+# Find current relative path of script
 rel_path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
-abs_path=$(pwd)
-if [ $abs_path == "/" ]
-then
-  abs_path="/$rel_path"
-else
-  abs_path=$(pwd)"/$rel_path"
-fi
 
 # Import helping functions
-. $abs_path/functions.sh
+. $rel_path/functions.sh
+
+# Activate cleanup function
+trap cleanup EXIT ERR SIGINT
 
 # Parameters Definition
 user=$(whoami)
-service_user="btcrpcexplorer"
-log_dir=$abs_path"/logs"
-btcrpcexplorer_update_ok=0
-
+service_user=btcrpcexplorer
+software="BTC RPC Explorer"
+service=btcrpcexplorer
+sig_min=1
+backup_list=btc-rpc-explorer
+backup_path=/home/$service_user
+update_attempt=false
+perform_restore=false
+update_succesfull=false
 # Check if optional arguments are valid
-while [ ! -z "$1" ];
-do
-  if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
-    show_usage
-    exit 0
-  elif [[ "$1" == "-u" ]] || [[ "$1" == "--service-user" ]]; then
-    service_user=$2
-    if [[ -z $service_user ]]; then echo "No values provided for $1"; exit 1; fi
-    id $service_user > /dev/null 2>&1
-    if [[ ! $? == 0 ]]; then echo "User $service_user does not exists"; exit 1; fi
-    shift
-  elif [[ "$1" == "-d" ]] || [[ "$1" == "--log-dir" ]]; then
-    log_dir=$2
-    if [[ -z $log_dir ]]; then echo "No values provided for $1"; exit 1; fi
-    shift
-  else
-    echo "Invalid argument $1"
-    show_usage
-    exit 1
-  fi
-  shift
-done
+parse_args $@
 
-# Activate cleanup function
-trap cleanup ERR
+# Create log directory if not exists and new log file
+init_log
 
-# Create log directory
-sudo mkdir -p $log_dir
-if [[ $? != 0 ]]; then echo "Cannot create log directory $log_dir" >> $log; exit 1; fi
-log=$log_dir/update_btcrpcexplorer_$(date +"%Y%m%d_T_%H%M%S").log
+echo $(info)"Checking $software" >> $log
 
-echo $(outl)"Checking BTC RPC Explorer" >> $log
+# Get current version and latest release
+current_v=$(sudo su - $service_user -c "btc-rpc-explorer/bin/cli.js --version" | sed 's|.*v||')
+latest_v=$(curl -sL https://api.github.com/repos/janoside/btc-rpc-explorer/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||')
 
-# Checking version and latest release
-explorer_v=$(sudo su - $service_user -c "btc-rpc-explorer/bin/cli.js --version" | sed 's|.*v||;s|[\.00*]*$||')
-echo $(outl)"BTC RPC Explorer current version:" $explorer_v >> $log
-explorer_latest=$(curl -sL https://api.github.com/repos/janoside/btc-rpc-explorer/releases/latest | grep tag_name | sed 's|.*: "v||;s|",||;s|[\.00*]*$||')
-echo $(outl)"BTC RPC Explorer latest available release:" $explorer_latest >> $log
+echo $(info)"$software current version:" $current_v >> $log
+echo $(info)"$software latest available release:" $latest_v >> $log
+
+get_common_prefix $current_v $latest_v
 
 # Compare versions
-if [[ "$explorer_v" > "$explorer_latest" ]] || [[ "$explorer_v" < "$explorer_latest" ]]
-then
-  echo $(outl)"Version mismatch, starting update process" >> $log
+if [[ $current_v == $common_prefix ]] || [[ $latest_v == $common_prefix ]]; then
+  echo $(info)"Version matching, nothing to do" >> $log
+  exit 0
+else
+  echo $(info)"Version mismatch, starting update process" >> $log
+  update_attempt=true
 
   # Stopping service
-  echo $(outl)"Stopping btcrpcexplorer service" >> $log
-  sudo systemctl stop btcrpcexplorer
-  explorer_status=$(systemctl is-active btcrpcexplorer.service)
-  if [ "$explorer_status" == "active" ]; then echo $(errl)"Impossible to stop btcrpcexplorer service, service is $explorer_status" >> $log; exit 1; fi
-  echo $(outl)"Service btcrpcexplorer stopped, service is $explorer_status" >> $log
+  stop_service btcrpcexplorer
 
+  # Backup of current version
+  create_backup $backup_path $backup_list
+  perform_restore=true
+  
   # Clean and update local source code to get latest release
-  echo $(outl)"Updating local repository" >> $log
+  echo $(info)"Updating local repository" >> $log
+
   sudo su - $service_user -c "cd btc-rpc-explorer && git fetch --quiet"
-  if [[ $? != 0 ]]; then echo $(errl)"Error on git fetch command" >> $log; exit 1; fi
+  if [[ $? != 0 ]]; then echo $(error)"Error on git fetch command" >> $log; exit 1; fi
+  echo $(info)"git fetch succesfull" >> $log;
+
   sudo su - $service_user -c "cd btc-rpc-explorer && git reset --hard HEAD --quiet"
-  if [[ $? != 0 ]]; then echo $(errl)"Error on git reset command" >> $log; exit 1; fi
-  explorer_git_latest=$(sudo su - $service_user -c "cd btc-rpc-explorer && git tag | sort --version-sort | tail -n 1")
-  if [[ $? != 0 ]]; then echo $(errl)"Error on git tag command" >> $log; exit 1; fi
-  git_checkout_out=$(sudo su - $service_user -c "cd btc-rpc-explorer && git checkout $explorer_git_latest --quiet")
-  if [[ $? != 0 ]]; then echo $(errl)"Error during git checkout" >> $log; exit 1; fi
-  echo $(outl)"Local repository updated" >> $log
+  if [[ $? != 0 ]]; then echo $(error)"Error on git reset command" >> $log; exit 1; fi
+  echo $(info)"git reset succesfull" >> $log;
 
-  echo $(outl)"Installing BTC RPC Explorer" >> $log
+  latest_v=$(sudo su - $service_user -c "cd btc-rpc-explorer && git tag | sort --version-sort | tail -n 1")
+  if [[ $? != 0 ]]; then echo $(error)"Error on git tag command" >> $log; exit 1; fi
+  echo $(info)"git tag succesfull" >> $log;
+
+  # Checkout of Git Version
+  sudo su - $service_user -c "cd btc-rpc-explorer && git checkout v$latest_v --quiet"
+  if [[ $? != 0 ]]; then echo $(error)"git checkout failure" >> $log; exit 1; fi
+  echo $(info)"git checkout succesfull" >> $log
+  
+  echo $(info)"Local repository updated" >> $log
+
+  # Installation of new version
+  echo $(info)"Starting installation of new $software version" >> $log
   sudo su - $service_user -c "cd btc-rpc-explorer && npm install --silent"
-  if [[ $? != 0 ]]; then echo $(errl)"Error during npm installation" >> $log; exit 1; fi
-  explorer_v=$(sudo su - $service_user -c "btc-rpc-explorer/bin/cli.js --version" | sed 's|.*v||')
-  echo $(outl)"BTC RPC Explorer installed correctly, current version: $explorer_v" >> $log
-  explorer_updated=1
 
-  # Service restart
-  echo $(outl)"Starting service btcrpcexplorer" >> $log
-  sudo systemctl start btcrpcexplorer
-  explorer_status=$(systemctl is-active btcrpcexplorer.service)
-  if [ "$explorer_status" == "active" ]
-  then
-    echo $(outl)"Service btcrpcexplorer restarted correctly, service is now running" >> $log
-  else
-    echo $(errl)"Service btcrpcexplorer restart failed, service status is $explorer_status" >> $log
-  fi
+  # Installation check
+  current_v=$(sudo su - $service_user -c "btc-rpc-explorer/bin/cli.js --version" | sed 's|.*v||')
+  check_installation $current_v
+  if [[ $? == 0 ]]; then update_succesfull=1; else exit 1; fi
 
-else
-  echo $(outl)"Version matching, nothing to do" >> $log
+  # Backup deletion
+  perform_restore=false
+  delete_backup $backup_path $backup_list
 fi
