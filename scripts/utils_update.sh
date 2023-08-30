@@ -1,15 +1,5 @@
 #!/bin/bash
 
-# print an info message
-function info {
-  echo $(date "+%F %T")" - INFO - "
-}
-
-# print an error message
-function error {
-  echo $(date "+%F %T")" - ERROR - "
-}
-
 # print usage info
 function show_usage {
   printf "Usage: $0 [optional parameter(s)]\n"
@@ -47,11 +37,8 @@ function parse_args {
     elif ([[ "$1" == "-a" ]] || [[ "$1" == "--sys-arc" ]]) && ([[ "$software" == "Bitcoin Core" ]] || [[ "$software" == "Lightning Network Daemon" ]]); then
       sys_arc=$2
       if [[ -z $sis_arc ]]; then echo "No values provided for $1"; exit 1; fi
-      if [[ "$software" == "Bitcoin Core" ]]; then 
-        if ! ([[ $sys_arc == "x86_64" ]] || [[ $sys_arc == "aarch64" ]] || [[ $sys_arc == "arm" ]]); then echo "Invalid input $sys_arc, $1 valid values are: x86_64, aarch64, arm"; exit 1; fi
-      fi
-      if [[ "$software" == "Lightning Network Daemon" ]]; then
-        if ! ([[ $sys_arc == "amd64" ]] || [[ $sys_arc == "arm64" ]]); then echo "Invalid input $sys_arc, $1 valid values are: amd64, arm64"; exit 1; fi
+      if [[ "$software" == "Bitcoin Core" ]] && [[ $sys_arc != "x86_64" ]] && [[ $sys_arc != "aarch64" ]] && [[ $sys_arc != "arm" ]]; then echo "Invalid input $sys_arc, $1 valid values are: x86_64, aarch64, arm"; exit 1; fi
+      if [[ "$software" == "Lightning Network Daemon" ]] && [[ $sys_arc != "amd64" ]] && [[ $sys_arc != "arm64" ]]; then echo "Invalid input $sys_arc, $1 valid values are: amd64, arm64"; exit 1; fi
       shift
     elif [[ "$1" == "-u" ]] || [[ "$1" == "--service-user" ]] && ([[ "$software" == "BTC RPC Explorer" ]] || [[ "$software" == "Mempool Explorer" ]]); then
       service_user=$2
@@ -75,21 +62,6 @@ function parse_args {
 # compute common prefix of given strings
 function get_common_prefix {
   common_prefix=$(printf "%s\n%s\n" "$1" "$2" | sed -e 'N;s/^\(.*\).*\n\1.*$/\1/')
-}
-
-# create logs folder if it doesn't exist and a new log file
-function init_log {
-  abs_path=$(pwd)
-  if [ $abs_path == "/" ]
-  then
-    abs_path="/$rel_path"
-  else
-    abs_path=$(pwd)"/$rel_path"
-  fi
-  log_dir=$abs_path"/logs"
-  sudo mkdir -p $log_dir
-  if [[ $? != 0 ]]; then echo "Cannot create log directory $log_dir" >> $log; exit 1; fi
-  log=$log_dir/$service"_"$(date +"%Y%m%d_T_%H%M%S").log
 }
 
 # verify if checksum is valid
@@ -145,33 +117,6 @@ function check_installation {
   fi
 }
 
-# download a file from the specified url
-function download_file {
-  url=$1
-  file=$(echo $url | sed 's|.*/||')
-
-  wget -q $url
-  if [ $? == 0 ]; then
-    if [ -f $file ]; then
-      echo $(info)"$file downloaded from $url" >> $log
-    else
-      echo $(error)"$url downloaded but $file missing" >> $log
-      exit 1
-    fi
-  else
-    echo $(error)"error while downloading $file from $url" >> $log
-    exit 1
-  fi
-}
-
-# delete a file or a folder if it exists
-function delete {
-  if [[ -f $1 ]] || [[ -d $1 ]]; then
-    rm -R $1
-    if [[ $? != 0 ]]; then echo $(error) "Cannot cleanup $1" >> $log; exit 1; fi
-  fi
-}
-
 # create backup
 function create_backup {
   echo $(info)"Backup of current version" >> $log
@@ -198,7 +143,6 @@ function restore_backup {
         echo $(info)"Backup of $2/$file restored" >> $log
       fi
     done <<< $1
-  fi
   echo $(info)"Restore succesfull" >> $log
 }
 
@@ -226,7 +170,7 @@ function cleanup {
   fi
   if $update_attempt; then
     restart_service $service
-    if [[ $service == "mempool" ]] then
+    if [[ $service == "mempool" ]]; then
       restart_service nginx
     fi
   fi

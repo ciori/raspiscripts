@@ -3,8 +3,9 @@
 # Find current relative path of script
 rel_path=$(echo $0 | sed 's|/.[^/]*.sh$||;s|\./||')
 
-# Import helping functions
-. $rel_path/functions.sh
+# Import functions
+. $rel_path/utils.sh
+. $rel_path/utils_update.sh
 
 # Activate cleanup function
 trap cleanup EXIT ERR SIGINT
@@ -24,7 +25,7 @@ update_succesfull=false
 parse_args $@
 
 # Create log directory if not exists and new log file
-init_log
+init_log mempool
 
 echo $(info)"Checking $software" >> $log
 
