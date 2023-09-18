@@ -21,8 +21,7 @@ while IFS= read -r line
   utc_timestamp_end=$(echo "ibase=16; $hextimestamp_end" | bc)
 
   # check if backup task ended in the last lookback_seconds since current timestamp
-  if [[ $(($utc_timestamp_end+$lookback_seconds)) > $curr_timestamp ]]
-  then
+  if [[ $(($utc_timestamp_end+$lookback_seconds)) > $curr_timestamp ]]; then
     # get task log using start timestamp
     task_log=$(cat $(find /var/log/pve/tasks -name *$hextimestamp_start*))
 
@@ -33,39 +32,38 @@ while IFS= read -r line
     backup_end=0
     while IFS= read -r line
       do
-      if [[ $line == *"starting new backup job"*"--storage"* ]]
-      then
+      if [[ $line == *"starting new backup job"*"--storage"* ]]; then
         datastore=$(echo $line | sed 's|.*--storage ||;s| .*||')
       fi
       # get vm id and starting index
-      if [[ $line == *"Starting Backup of VM"* ]]
-      then
+      if [[ $line == *"Starting Backup of VM"* ]]; then
         backup_start=$curr_line
-        vm=$(echo $line | sed 's|.*Starting Backup of VM||;s| (qemu)||;s|(|\\(|;s|)|\\)|')
-        vm_name=$(/usr/sbin/qm config $vm | grep '^name:' | awk '{print $2}')
+        if [[ $line == *"(lxc)"* ]]; then
+          ct=$(echo $line | sed 's|.*Starting Backup of VM||;s| (qemu)||;s|(|\\(|;s|)|\\)|;s| \\(lxc\\)||')
+          name=$(/usr/sbin/pct config $ct | grep 'hostname:' | awk '{print $2}')
+        else
+          vm=$(echo $line | sed 's|.*Starting Backup of VM||;s| (qemu)||;s|(|\\(|;s|)|\\)|')
+          name=$(/usr/sbin/qm config $vm | grep '^name:' | awk '{print $2}')
+        fi
       # send ok notification (end index is not necessary because log is not sent on successfull backup)
-      elif [[ $line == *"Finished Backup of VM"* ]]
-      then
+      elif [[ $line == *"Finished Backup of VM"* ]]; then
         duration=$(echo $line | sed 's|.*(||;s|)||')
-      elif [[ $line == *"Backup finished at "* ]]
-      then
-        $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "✅ $vm_name \\[ $datastore \\]:" --text "backup task finished at $(echo $line | sed 's|.*Backup finished at ||'). Duration: $duration"
+      elif [[ $line == *"Backup finished at "* ]]; then
+        $BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "✅ $name \\[ $datastore \\]:" --text "backup task finished at $(echo $line | sed 's|.*Backup finished at ||'). Duration: $duration"
       # get end index and send error notification
-      elif [[ $line == *"Failed at "* ]]
-      then
+      elif [[ $line == *"Failed at "* ]]; then
         backup_end=$curr_line
         curr_line2=0
 	task_err_log=""
         # extract log for backup task from backup job log using start/end indexes
         while IFS= read -r line2
         do
-          if (( $curr_line2 >= $backup_start )) && (( $curr_line2 <= $backup_end ))
-          then
+          if (( $curr_line2 >= $backup_start )) && (( $curr_line2 <= $backup_end )); then
             task_err_log="$task_err_log"$(echo '\n'"$line2" | sed 's|(|\\(|;s|)|\\)|')
           fi
           curr_line2=$(($curr_line2 + 1))
         done <<< $task_log
-	$BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 $vm_name \\[ $datastore \\]:" --text "backup task failed at $(echo $line | sed 's|.*Failed at ||')\n*Error Log:*_$task_err_log _"
+	$BOT_PATH/telegram.bot --bottoken $BOT_TOKEN --chatid $CHAT_ID --title "🚨 $name \\[ $datastore \\]:" --text "backup task failed at $(echo $line | sed 's|.*Failed at ||')\n*Error Log:*_$task_err_log _"
       fi
       curr_line=$(($curr_line + 1))
     done <<< $task_log
