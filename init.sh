@@ -164,7 +164,8 @@ BITCOIN_PRUNE=$(dialog \
     --inputbox "Would you like to setup Bitcoin with pruning?\n\nInsert the pruning value here, or leave 0 to NOT enable pruning:" \
     $DIALOG_HEIGHT $DIALOG_WIDTH 0 \
     2>&1 >/dev/tty)
-if [ $BITCOIN_PRUNE -eq 0 ] then
+if [ $BITCOIN_PRUNE -eq 0 ]
+then
     sed -i "s/PRUNE/# Pruning is disabled/g" /home/bitcoin/.bitcoin/bitcoin.conf
 else
     sed -i "s/PRUNE/prune=${BITCOIN_PRUNE}/g" /home/bitcoin/.bitcoin/bitcoin.conf
