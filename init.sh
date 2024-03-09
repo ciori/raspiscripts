@@ -158,7 +158,7 @@ unset $RPCAUTH_OUTPUT
 # Configure bitcoin
 sudo cp ${REPO_PATH}/templates/bitcoind/bitcoin.conf /home/bitcoin/.bitcoin/bitcoin.conf
 sudo chown bitcoin:bitcoin /home/bitcoin/.bitcoin/bitcoin.conf
-sed -i "s/RPCAUTH/${RPCAUTH_STRING}/g" /home/bitcoin/.bitcoin/bitcoin.conf
+sudo -u bitcoin sed -i "s/RPCAUTH/${RPCAUTH_STRING}/g" /home/bitcoin/.bitcoin/bitcoin.conf
 BITCOIN_PRUNE=$(dialog \
     --clear \
     --title "Bitcoin Configuration" \
@@ -167,9 +167,9 @@ BITCOIN_PRUNE=$(dialog \
     2>&1 >/dev/tty)
 if [ $BITCOIN_PRUNE -eq 0 ]
 then
-    sed -i "s/PRUNE/# Pruning is disabled/g" /home/bitcoin/.bitcoin/bitcoin.conf
+    sudo -u bitcoin sed -i "s/PRUNE/# Pruning is disabled/g" /home/bitcoin/.bitcoin/bitcoin.conf
 else
-    sed -i "s/PRUNE/prune=${BITCOIN_PRUNE}/g" /home/bitcoin/.bitcoin/bitcoin.conf
+    sudo -u bitcoin sed -i "s/PRUNE/prune=${BITCOIN_PRUNE}/g" /home/bitcoin/.bitcoin/bitcoin.conf
 fi
 sudo -u bitcoin chmod 640 /home/bitcoin/.bitcoin/bitcoin.conf
 
