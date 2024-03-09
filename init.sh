@@ -51,7 +51,7 @@ sudo systemctl enable --now fail2ban
 sudo cp ${REPO_PATH}/templates/tor/tor.list /etc/apt/sources.list.d/tor.list
 sudo sed -i "s/SYS_ARCH/${SYS_DPKG_ARCH}/g" /etc/apt/sources.list.d/tor.list
 sudo sed -i "s/SYS_VERSION/${SYS_VERSION}/g" /etc/apt/sources.list.d/tor.list
-wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
+wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | sudo tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
 
 # Install tor
 sudo apt update -y
