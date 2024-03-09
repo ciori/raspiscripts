@@ -101,11 +101,12 @@ wget https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/SHA256SUMS.asc
 
 # Verify the hash value
 sha256sum --ignore-missing --check SHA256SUMS
-if [$? -neq 0 ] then
+if [ $? -ne 0 ] then
     echo ""
     echo "Hash value of bitcoin-${BITCOIN_VERSION}-${SYS_UNAME_ARCH}-linux-gnu.tar.gz does not correspond"
     echo "ABORTED!!!"
     echo ""
+    exit 1
 fi
 
 # Download developers gpg keys
