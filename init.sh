@@ -180,5 +180,5 @@ sudo -u bitcoin chmod g+r ${DATA_PATH}/bitcoin/debug.log
 ln -s ${DATA_PATH}/bitcoin /home/${USER}/.bitcoin
 
 # Add bitcoind service, enable it and start it
-sudo cp ${REPO_PATH}/templates/bitcoin/bitcoind.service /etc/systemd/system/bitcoind.service
+sudo cp ${REPO_PATH}/templates/bitcoind/bitcoind.service /etc/systemd/system/bitcoind.service
 sudo systemctl enable --now bitcoind
