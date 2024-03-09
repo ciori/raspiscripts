@@ -156,7 +156,7 @@ RPCAUTH_STRING=$(echo "$RPCAUTH_OUTPUT" | grep rpcauth)
 unset $RPCAUTH_OUTPUT
 
 # Configure bitcoin
-sudo cp ${REPO_PATH}/templates/bitcoin/bitcoin.conf /home/bitcoin/.bitcoin/bitcoin.conf
+sudo cp ${REPO_PATH}/templates/bitcoind/bitcoin.conf /home/bitcoin/.bitcoin/bitcoin.conf
 sudo chown bitcoin:bitcoin /home/bitcoin/.bitcoin/bitcoin.conf
 sed -i "s/RPCAUTH/${RPCAUTH_STRING}/g" /home/bitcoin/.bitcoin/bitcoin.conf
 BITCOIN_PRUNE=$(dialog \
