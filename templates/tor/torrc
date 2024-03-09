@@ -1,0 +1,9 @@
+# General
+
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFileGroupReadable 1
+
+# Hidden Services
+
+# ...

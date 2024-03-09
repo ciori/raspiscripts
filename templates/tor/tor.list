@@ -1,0 +1,2 @@
+deb     [arch=SYS_ARCH signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org SYS_VERSION main
+deb-src [arch=SYS_ARCH signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org SYS_VERSION main
