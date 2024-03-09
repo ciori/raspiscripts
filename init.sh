@@ -142,7 +142,6 @@ sudo -u bitcoin ln -s ${DATA_PATH}/bitcoin /home/bitcoin/.bitcoin
 
 # Generate the rpcauth credential
 cd /home/bitcoin/.bitcoin
-sudo -u bitcoin cd /home/bitcoin/.bitcoin
 sudo -u bitcoin wget https://raw.githubusercontent.com/bitcoin/bitcoin/master/share/rpcauth/rpcauth.py
 RPCAUTH_PASSWORD=$(dialog \
     --clear \
@@ -168,8 +167,10 @@ BITCOIN_PRUNE=$(dialog \
 if [ $BITCOIN_PRUNE -eq 0 ]
 then
     sudo -u bitcoin sed -i "s/PRUNE/# Pruning is disabled/g" /home/bitcoin/.bitcoin/bitcoin.conf
+    sudo -u bitcoin sed -i "s/TXINDEX/txindex=1/g" /home/bitcoin/.bitcoin/bitcoin.conf
 else
     sudo -u bitcoin sed -i "s/PRUNE/prune=${BITCOIN_PRUNE}/g" /home/bitcoin/.bitcoin/bitcoin.conf
+    sudo -u bitcoin sed -i "s/TXINDEX/#txindex=1 Disabled with pruning/g" /home/bitcoin/.bitcoin/bitcoin.conf
 fi
 sudo -u bitcoin chmod 640 /home/bitcoin/.bitcoin/bitcoin.conf
 
