@@ -142,6 +142,7 @@ sudo -u bitcoin ln -s ${DATA_PATH}/bitcoin /home/bitcoin/.bitcoin
 
 # Generate the rpcauth credential
 cd /home/bitcoin/.bitcoin
+sudo -u bitcoin cd /home/bitcoin/.bitcoin
 sudo -u bitcoin wget https://raw.githubusercontent.com/bitcoin/bitcoin/master/share/rpcauth/rpcauth.py
 RPCAUTH_PASSWORD=$(dialog \
     --clear \
