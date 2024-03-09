@@ -118,7 +118,8 @@ curl -s "https://api.github.com/repositories/355107265/contents/builder-keys" | 
 
 # Verify gpg signature
 gpg --verify SHA256SUMS.asc
-if [$? -neq 0 ] then
+if [ $? -ne 0 ]
+then
     echo ""
     echo "No good signature found from bitcoin core developers gpg keys"
     echo "ABORTED!!!"
