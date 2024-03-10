@@ -1,0 +1,10 @@
+{
+    "version": 0,
+
+    "tools": {
+        "bitcoin": {
+            "label": "Bitcoin",
+            "path": "bitcoin.html"
+        }
+    }
+}

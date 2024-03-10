@@ -196,3 +196,7 @@ sudo systemctl restart cockpit.socket
 
 # Allow cockpit on firewall
 sudo ufw allow https
+
+# Add the bitcoin cockpit plugin
+mkdir -p /home/${USER}/.local/share/cockpit/bitcoin
+cp -R ${REPO_PATH}/templates/cockpit/bitcoin-plugin/* /home/${USER}/.local/share/cockpit/bitcoin/
