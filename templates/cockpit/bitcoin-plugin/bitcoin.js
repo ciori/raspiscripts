@@ -1,35 +1,33 @@
-const address = document.getElementById("address");
 const output = document.getElementById("output");
 const result = document.getElementById("result");
-const button = document.getElementById("ping");
+const button = document.getElementById("getblockchaininfo");
 
-function ping_run() {
-  /* global cockpit */
-  cockpit.spawn(["ping", "-c", "4", address.value])
-    .stream(ping_output)
-    .then(ping_success)
-    .catch(ping_fail);
+function getblockchaininfo_run() {
+  cockpit.spawn(["bitcoin-cli", "getblockchaininfo"])
+    .stream(getblockchaininfo_output)
+    .then(getblockchaininfo_success)
+    .catch(getblockchaininfo_fail);
 
   result.textContent = "";
   output.textContent = "";
 }
 
-function ping_success() {
-  result.style.color = "green";
+function getblockchaininfo_success() {
+  result.style.color = "black";
   result.textContent = "success";
 }
 
-function ping_fail() {
+function getblockchaininfo_fail() {
   result.style.color = "red";
   result.textContent = "fail";
 }
 
-function ping_output(data) {
+function getblockchaininfo_output(data) {
   output.append(document.createTextNode(data));
 }
 
 // Connect the button to starting the "ping" process
-button.addEventListener("click", ping_run);
+button.addEventListener("click", getblockchaininfo_run);
 
 // Send a 'init' message.  This tells integration tests that we are ready to go
 cockpit.transport.wait(function () { });
