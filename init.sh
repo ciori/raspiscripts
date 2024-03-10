@@ -38,11 +38,10 @@ sudo chown ${USER}:${USER} $DATA_PATH
 
 #### FIREWALL ####
 
-sudo apt install -y ufw fail2ban
+sudo apt install -y ufw
 sudo ufw allow ssh
 echo "y" | sudo ufw enable
 sudo systemctl enable --now ufw
-sudo systemctl enable --now fail2ban
 
 
 #### TOR ####
@@ -182,3 +181,18 @@ ln -s ${DATA_PATH}/bitcoin /home/${USER}/.bitcoin
 # Add bitcoind service, enable it and start it
 sudo cp ${REPO_PATH}/templates/bitcoind/bitcoind.service /etc/systemd/system/bitcoind.service
 sudo systemctl enable --now bitcoind
+
+
+#### COCKPIT ####
+
+# Install cockpit
+sudo apt install -y cockpit
+
+# Configure cockpit to listen on port 443 and restart the socket
+sudo mkdir -p /etc/systemd/system/cockpit.socket.d
+sudo cp ${REPO_PATH}/templates/cockpit/listen.conf /etc/systemd/system/cockpit.socket.d/listen.conf
+sudo systemctl daemon-reload
+sudo systemctl restart cockpit.socket
+
+# Allow cockpit on firewall
+sudo ufw allow https
