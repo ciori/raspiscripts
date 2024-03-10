@@ -199,4 +199,7 @@ sudo ufw allow https
 
 # Add the bitcoin cockpit plugin
 mkdir -p /home/${USER}/.local/share/cockpit/bitcoin
-cp -R ${REPO_PATH}/templates/cockpit/bitcoin-plugin/* /home/${USER}/.local/share/cockpit/bitcoin/
+# ... built in simple example
+# cp -R ${REPO_PATH}/templates/cockpit/bitcoin-plugin/* /home/${USER}/.local/share/cockpit/bitcoin/
+# ... add plugin from dedicated plugin repository
+# ...
