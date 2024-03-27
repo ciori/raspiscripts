@@ -38,10 +38,11 @@ sudo chown ${USER}:${USER} $DATA_PATH
 
 #### FIREWALL ####
 
-sudo apt install -y ufw
-sudo ufw allow ssh
-echo "y" | sudo ufw enable
-sudo systemctl enable --now ufw
+# Setup a general firewalld configuration
+sudo apt install -y firewalld
+sudo firewall-cmd --permanent --zone=public --add-service=ssh
+sudo firewall-cmd --permanent --zone=public --remove-service=dhcpv6-client
+sudo firewall-cmd --reload
 
 
 #### TOR ####
@@ -195,11 +196,23 @@ sudo systemctl daemon-reload
 sudo systemctl restart cockpit.socket
 
 # Allow cockpit on firewall
-sudo ufw allow https
+sudo firewall-cmd --permanent --zone=public --add-service=http --add-service=https
+sudo firewall-cmd --reload
 
 # Add the bitcoin cockpit plugin
-mkdir -p /home/${USER}/.local/share/cockpit/bitcoin
-# ... built in simple example
-# cp -R ${REPO_PATH}/templates/cockpit/bitcoin-plugin/* /home/${USER}/.local/share/cockpit/bitcoin/
-# ... add plugin from dedicated plugin repository
 # ...
+
+
+# Setup the Network
+
+# Let Network Manager manage the interfaces and reboot the system
+sudo apt install -y network-manager
+sudo mv /etc/network/interfaces /etc/network/interfaces.backup
+sudo systemctl enable --now NetworkManager
+sudo systemctl restart NetworkManager
+echo ""
+echo "The Blockchain Sync has been started..."
+echo ""
+echo "THE SYSTEM WILL NOW REBOOT -> The IP address will probably change!!!"
+echo ""
+sudo reboot now
