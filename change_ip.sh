@@ -19,7 +19,7 @@ CHANGE_FLAG=$(dialog \
     2>&1 >/dev/tty)
 
 # Ask if the user wants a DHCP or static IP
-if [ CHANGE_FLAG ]
+if [ $CHANGE_FLAG ]
 then
     IP_TYPE=$(dialog \
         --clear \
