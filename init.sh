@@ -124,6 +124,7 @@ then
     echo "No good signature found from bitcoin core developers gpg keys"
     echo "ABORTED!!!"
     echo ""
+    exit 1
 fi
 
 # Install bitcoind
