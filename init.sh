@@ -203,6 +203,16 @@ sudo firewall-cmd --reload
 # ...
 
 
+#### CONFS ####
+
+# Save useful variables in a file
+touch ${REPO_PATH}/envs
+grep -qxF "DATA_PATH=${DATA_PATH}" ${DATA_PATH}/envs || echo "DATA_PATH=${DATA_PATH}" >> ${REPO_PATH}/envs
+sed -i "/DATA_PATH/c\DATA_PATH=${DATA_PATH}" ${REPO_PATH}/envs
+
+
+#### NETWORK ####
+
 # Setup the Network
 
 # Let Network Manager manage the interfaces and reboot the system

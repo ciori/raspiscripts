@@ -16,7 +16,7 @@ You need to provide:
 ## Idea
 
 1. Clone repo
-2. Initialize the machine using the init script, which will:
+2. Initialize the machine using the `init.sh` script, which will:
     - prepare the machine
     - install bitcoind and start the blockchain sync
     - install cockpit (TODO: and a custom plugin for monitoring and managing bitcoin and ln services)
