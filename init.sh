@@ -196,7 +196,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart cockpit.socket
 
 # Allow cockpit on firewall
-sudo firewall-cmd --permanent --zone=public --add-service=http --add-service=https
+sudo firewall-cmd --permanent --zone=public --add-service=https
 sudo firewall-cmd --reload
 
 # Add the bitcoin cockpit plugin
