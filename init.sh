@@ -178,6 +178,7 @@ sudo -u bitcoin chmod 640 /home/bitcoin/.bitcoin/bitcoin.conf
 # Test start bitcoin and add read permissions
 sudo -u bitcoin timeout 5 bitcoind
 sudo -u bitcoin chmod g+r ${DATA_PATH}/bitcoin/debug.log
+sudo chmod g+rx /home/bitcoin
 ln -s ${DATA_PATH}/bitcoin /home/${USER}/.bitcoin
 
 # Add bitcoind service, enable it and start it
