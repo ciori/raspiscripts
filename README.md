@@ -23,5 +23,4 @@ You need to provide:
     - reboot the system
 3. The machine will probably change IP based on your DHCP (some network changes have been done internally)
 4. Wait for the blockchain to finish syncing and then run the `after_sync.sh` script
-5. Optionally use the `change_ip.sh` script to set an automatic (DHCP) or a specific static LAN IP for the node
 4. Install and/or update the bitcoin and ln services by using the other scripts (TODO: or from the cockpit plugin)
