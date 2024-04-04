@@ -23,7 +23,7 @@ SYS_UNAME_ARCH=$(uname -m)
 SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 
 # Install packages
-sudo apt install -y wget curl git vim gpg apt-transport-https dialog
+sudo apt install -y wget curl vim gpg apt-transport-https dialog
 
 # Setup data disk permissions
 DATA_PATH=$(dialog \
@@ -188,21 +188,21 @@ sudo systemctl enable --now bitcoind
 
 #### COCKPIT ####
 
-# Install cockpit
-sudo apt install -y cockpit
+# # Install cockpit
+# sudo apt install -y cockpit
 
-# Configure cockpit to listen on port 443 and restart the socket
-sudo mkdir -p /etc/systemd/system/cockpit.socket.d
-sudo cp ${REPO_PATH}/templates/cockpit/listen.conf /etc/systemd/system/cockpit.socket.d/listen.conf
-sudo systemctl daemon-reload
-sudo systemctl restart cockpit.socket
+# # Configure cockpit to listen on port 443 and restart the socket
+# sudo mkdir -p /etc/systemd/system/cockpit.socket.d
+# sudo cp ${REPO_PATH}/templates/cockpit/listen.conf /etc/systemd/system/cockpit.socket.d/listen.conf
+# sudo systemctl daemon-reload
+# sudo systemctl restart cockpit.socket
 
-# Allow cockpit on firewall
-sudo firewall-cmd --permanent --zone=public --add-service=https
-sudo firewall-cmd --reload
+# # Allow cockpit on firewall
+# sudo firewall-cmd --permanent --zone=public --add-service=https
+# sudo firewall-cmd --reload
 
-# Add the bitcoin cockpit plugin
-# ...
+# # Add the bitcoin cockpit plugin
+# # ...
 
 
 #### CONFS ####
@@ -215,16 +215,16 @@ sed -i "/DATA_PATH/c\DATA_PATH=${DATA_PATH}" ${REPO_PATH}/envs
 
 #### NETWORK ####
 
-# Setup the Network
+# # Setup the Network
 
-# Let Network Manager manage the interfaces and reboot the system
-sudo apt install -y network-manager
-sudo mv /etc/network/interfaces /etc/network/interfaces.backup
-sudo systemctl enable --now NetworkManager
-sudo systemctl restart NetworkManager
-echo ""
-echo "The Blockchain Sync has been started..."
-echo ""
-echo "THE SYSTEM WILL NOW REBOOT -> The IP address will probably change!!!"
-echo ""
-sudo reboot now
+# # Let Network Manager manage the interfaces and reboot the system
+# sudo apt install -y network-manager
+# sudo mv /etc/network/interfaces /etc/network/interfaces.backup
+# sudo systemctl enable --now NetworkManager
+# sudo systemctl restart NetworkManager
+# echo ""
+# echo "The Blockchain Sync has been started..."
+# echo ""
+# echo "THE SYSTEM WILL NOW REBOOT -> The IP address will probably change!!!"
+# echo ""
+# sudo reboot now
