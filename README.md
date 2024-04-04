@@ -19,7 +19,7 @@ You need to provide:
 2. Initialize the machine using the `init.sh` script, which will:
     - prepare the machine
     - install bitcoind and start the blockchain sync
-    - install cockpit (TODO: and a custom plugin for monitoring and managing bitcoin and ln services)
+    - install a web app to manage the node (TODO: cockpit with a custom bitcoin plugin or a new dedicated web app)
     - reboot the system
 3. The machine will probably change IP based on your DHCP (some network changes have been done internally)
 4. Wait for the blockchain to finish syncing and then run the `after_sync.sh` script

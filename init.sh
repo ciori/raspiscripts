@@ -213,18 +213,24 @@ grep -qxF "DATA_PATH=${DATA_PATH}" ${REPO_PATH}/envs || echo "DATA_PATH=${DATA_P
 sed -i "/DATA_PATH/c\DATA_PATH=${DATA_PATH}" ${REPO_PATH}/envs
 
 
-#### NETWORK ####
+#### OUTPUT ####
 
-# # Setup the Network
-
-# # Let Network Manager manage the interfaces and reboot the system
-# sudo apt install -y network-manager
-# sudo mv /etc/network/interfaces /etc/network/interfaces.backup
-# sudo systemctl enable --now NetworkManager
-# sudo systemctl restart NetworkManager
-# echo ""
-# echo "The Blockchain Sync has been started..."
-# echo ""
-# echo "THE SYSTEM WILL NOW REBOOT -> The IP address will probably change!!!"
-# echo ""
-# sudo reboot now
+echo ""
+echo ""
+echo "The initial setup is complete!"
+echo "The Bitcoin Blockchain is now synching..."
+echo ""
+echo "It is recommended to logout and log back in so that all system and user permissions will refresh"
+echo "Then you can:"
+echo "  - view the synching progress with the following command: 'bitcoin-cli getblockchaininfo'"
+echo "  - view the bitcoind logs by executing: 'tail -f ~/.bitcoin/debug.log'"
+echo ""
+echo ""
+echo "Now wait... tick tock next block!"
+echo ""
+echo ""
+echo "Once the blockchain in synchronized, run the 'after_sync.sh' script to update the database cache size"
+echo "Then install other services..."
+echo ""
+echo "Good luck on your Bitcoin journey!"
+echo ""
