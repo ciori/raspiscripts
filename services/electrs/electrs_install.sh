@@ -79,7 +79,7 @@ sudo systemctl enable --now electrs
 
 # Enable the tor hidden service
 sudo grep -qxF "hidden_service_electrs" /etc/tor/torrc
-if [ ! $? ] then
+if [ ! $? ]; then
     echo "" | sudo tee -a /etc/tor/torrc
     echo "HiddenServiceDir /var/lib/tor/hidden_service_electrs/" | sudo tee -a /etc/tor/torrc
     echo "HiddenServiceVersion 3" | sudo tee -a /etc/tor/torrc
