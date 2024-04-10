@@ -12,7 +12,7 @@ if [[ $BLOCKCHAIN_STATUS == *"\"initialblockdownload\": false"* ]]; then
     echo "OK, size of the Bitcoin database cache has been reduced"
     echo "You should now install other services!!!"
     echo ""
-elif
+else
     echo ""
     echo "ABORT, the blockchain is still synchronizing!!!"
     echo ""
