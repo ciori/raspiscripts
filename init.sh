@@ -23,7 +23,7 @@ SYS_UNAME_ARCH=$(uname -m)
 SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 
 # Install packages
-sudo apt install -y wget curl vim gpg apt-transport-https dialog
+sudo apt install -y wget curl vim gpg apt-transport-https dialog jq
 
 # Setup data disk permissions
 DATA_PATH=$(dialog \
