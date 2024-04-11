@@ -24,7 +24,7 @@ sudo cp ${SCRIPT_PATH}/../../templates/electrs/electrs-reverse-proxy.conf /etc/n
 sudo systemctl reload nginx
 
 # Allow electrs on firewall
-sudo firewall-cmd --permanent --zone=public --add-port=50002
+sudo firewall-cmd --permanent --zone=public --add-port=50002/tcp
 sudo firewall-cmd --reload
 
 # Ask for the version and download the electrs repo
