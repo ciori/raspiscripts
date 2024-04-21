@@ -79,3 +79,22 @@ sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool.service /etc/systemd/syst
 sudo systemctl daemon-reload
 sudo systemctl enable --now mempool
 
+# Enable the tor hidden service
+sudo grep -qxF "hidden_service_mempool" /etc/tor/torrc
+if [ ! $? ]; then
+    echo "" | sudo tee -a /etc/tor/torrc
+    echo "HiddenServiceDir /var/lib/tor/hidden_service_mempool/" | sudo tee -a /etc/tor/torrc
+    echo "HiddenServiceVersion 3" | sudo tee -a /etc/tor/torrc
+    echo "HiddenServicePort 443 127.0.0.1:4081" | sudo tee -a /etc/tor/torrc
+    sudo systemctl reload tor
+fi
+MEMPOOL_TOR=$(sudo cat /var/lib/tor/hidden_service_mempool/hostname)
+
+# Final output
+echo ""
+echo ""
+echo "Mempool has been installed!!!"
+echo ""
+echo "The Tor hidden service is: ${MEMPOOL_TOR}"
+echo "The HTTPS Port is: 4081"
+echo ""
