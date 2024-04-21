@@ -46,7 +46,7 @@ create database mempool;
 grant all privileges on mempool.* to 'mempool'@'localhost' identified by '${MARIADB_PASSWORD}';
 EOF
 
-# Build backend
+# Build mempool backend
 sudo -u mempool bash -c 'cd /home/mempool/mempool/backend; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --prod; npm run build'
 
 # Configure the mempool backend
@@ -60,4 +60,22 @@ RPCAUTH_PASSWORD=$(dialog \
     2>&1 >/dev/tty)
 sudo -u mempool sed -i "s/Password_B/${RPCAUTH_PASSWORD}/g" /home/mempool/mempool/backend/mempool-config.json
 
+# Build mempool frontend
+sudo -u mempool bash -c 'cd /home/mempool/mempool/frontend; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --prod; npm run build'
+
+# Configure permissions
+sudo chmod 600 /home/mempool/mempool/backend/mempool-config.json
+
+# Configure nginx for mempool
+sudo rsync -av --delete /home/mempool/mempool/frontend/dist/mempool/ /var/www/mempool/
+sudo chown -R www-data:www-data /var/www/mempool
+sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool-ssl.conf /etc/nginx/sites-available/mempool-ssl.conf
+sudo ln -sf /etc/nginx/sites-available/mempool-ssl.conf /etc/nginx/sites-enabled/
+sudo rsync -av /home/mempool/mempool/nginx-mempool.conf /etc/nginx/snippets
+sudo cp ${SCRIPT_PATH}/../../templates/mempool/nginx.conf /etc/nginx/nginx.conf
+
+# Add mempool service, enable it and start it
+sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool.service /etc/systemd/system/mempool.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now mempool
 
