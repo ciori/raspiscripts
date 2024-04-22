@@ -73,10 +73,12 @@ sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool-ssl.conf /etc/nginx/sites
 sudo ln -sf /etc/nginx/sites-available/mempool-ssl.conf /etc/nginx/sites-enabled/
 sudo rsync -av /home/mempool/mempool/nginx-mempool.conf /etc/nginx/snippets
 sudo cp ${SCRIPT_PATH}/../../templates/mempool/nginx.conf /etc/nginx/nginx.conf
+sudo systemctl restart nginx
 
 # Add mempool service, enable it and start it
 sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool.service /etc/systemd/system/mempool.service
 sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool-start.sh /home/mempool/mempool/mempool-start.sh
+sudo chown mempool:mempool /home/mempool/mempool/mempool-start.sh
 sudo chmod 700 /home/mempool/mempool/mempool-start.sh
 sudo systemctl daemon-reload
 sudo systemctl enable --now mempool
