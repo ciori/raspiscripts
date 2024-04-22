@@ -76,6 +76,8 @@ sudo cp ${SCRIPT_PATH}/../../templates/mempool/nginx.conf /etc/nginx/nginx.conf
 
 # Add mempool service, enable it and start it
 sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool.service /etc/systemd/system/mempool.service
+sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool-start.sh /home/mempool/mempool/mempool-start.sh
+sudo chmod 700 /home/mempool/mempool/mempool-start.sh
 sudo systemctl daemon-reload
 sudo systemctl enable --now mempool
 
