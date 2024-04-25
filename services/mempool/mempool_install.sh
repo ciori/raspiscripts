@@ -16,16 +16,16 @@ SCRIPT_PATH=$(dirname "$SCRIPT")
 # Load general environment variables
 export $(xargs < ${SCRIPT_PATH}/../../envs)
 
+# Configure user
+sudo adduser --disabled-password --gecos "" mempool
+sudo adduser mempool bitcoin
+
 # Install nodejs with nvm
 sudo -u mempool bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 16'
 
 # Allow mempool on firewall
 sudo firewall-cmd --permanent --zone=public --add-port=4081/tcp
 sudo firewall-cmd --reload
-
-# Configure user
-sudo adduser --disabled-password --gecos "" mempool
-sudo adduser mempool bitcoin
 
 # Get the source code and ask for the version to use
 sudo -u mempool bash -c "cd; git clone https://github.com/mempool/mempool"
