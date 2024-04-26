@@ -77,14 +77,14 @@ sudo -u lnd ln -s ${DATA_PATH}/lnd /home/lnd/.lnd
 sudo -u lnd ln -s ${DATA_PATH}/bitcoin /home/lnd/.bitcoin
 
 # Configure lnd
-sudo cp ${REPO_PATH}/templates/lnd/lnd.conf /data/lnd/lnd.conf
+sudo cp ${SCRIPT_PATH}/../../templates/lnd/lnd.conf /data/lnd/lnd.conf
 #sudo chmod 640 /data/lnd/lnd.conf
 #sudo chown lnd:lnd /data/lnd/lnd.conf
 LND_NODE_NAME=$(dialog \
     --clear \
     --title "LND Configuration" \
     --inputbox "Would you like to name your LND Node?\n\nInsert the name here, or leave it blank to generate a random alphanumeric string:" \
-    $DIALOG_HEIGHT $DIALOG_WIDTH 0 \
+    $DIALOG_HEIGHT $DIALOG_WIDTH \
     2>&1 >/dev/tty)
 if [ $LND_NODE_NAME == "" ]
 then
@@ -94,7 +94,7 @@ else
 fi
 
 # Add lnd service, enable it and start it
-sudo cp ${REPO_PATH}/templates/lnd/lnd.service /etc/systemd/system/lnd.service
+sudo cp ${SCRIPT_PATH}/../../templates/lnd/lnd.service /etc/systemd/system/lnd.service
 sudo systemctl enable --now lnd
 
 # Create the lnd wallet

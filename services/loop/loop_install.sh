@@ -69,6 +69,6 @@ sudo adduser $USER loop
 # ...
 
 # Add loopd service, enable it and start it
-sudo cp ${REPO_PATH}/templates/loop/loopd.service /etc/systemd/system/loopd.service
+sudo cp ${SCRIPT_PATH}/../../templates/loop/loopd.service /etc/systemd/system/loopd.service
 sudo systemctl system-reload
 sudo systemctl enable --now loopd
