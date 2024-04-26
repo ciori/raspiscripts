@@ -25,7 +25,13 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 sudo adduser --disabled-password --gecos "" rtl
 sudo adduser rtl loop
 sudo cp ${DATA_PATH}/lnd/data/chain/bitcoin/mainnet/admin.macaroon /home/rtl/admin.macaroon
+sudo cp /home/loop/.loop/mainnet/loop.macaroon /home/rtl/loop.macaroon
 sudo chown rtl:rtl /home/rtl/admin.macaroon
+sudo chown rtl:rtl /home/rtl/loop.macaroon
+
+# Setup rtl data folder
+mkdir -p ${DATA_PATH}/rtl/{database,backup}
+sudo chown rtl:rtl -R ${DATA_PATH}/rtl
 
 # Install nodejs with nvm
 sudo -u rtl bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 20'
@@ -39,6 +45,7 @@ sudo cp ${SCRIPT_PATH}/../../templates/rtl/rtl-reverse-proxy.conf /etc/nginx/str
 sudo systemctl reload nginx
 
 # Get the source code and ask for the version to use
+sudo -u rtl bash -c 'curl https://keybase.io/suheb/pgp_keys.asc | gpg --import'
 sudo -u rtl bash -c "cd; git clone https://github.com/Ride-The-Lightning/RTL.git"
 RTL_VERSION_LATEST=$(curl "https://api.github.com/repos/Ride-The-Lightning/RTL/releases/latest" -s | jq .tag_name -r)
 RTL_VERSION=$(dialog \
@@ -47,7 +54,7 @@ RTL_VERSION=$(dialog \
     --inputbox "What version would you like to use?" \
     $DIALOG_HEIGHT $DIALOG_WIDTH $RTL_VERSION_LATEST \
     2>&1 >/dev/tty)
-sudo -u rtl bash -c "cd; cd RTL; git checkout $RTL_VERSION"
+sudo -u rtl bash -c "cd; cd RTL; git checkout $RTL_VERSION; git verify-tag $RTL_VERSION"
 
 # Verify tag and abort if it fails
 # ... git verify-tag $RTL_VERSION ...
@@ -66,6 +73,8 @@ RTL_PASSWORD=$(dialog \
     2>&1 >/dev/tty)
 sudo -u rtl sed -i "s/PASSWORD/${RTL_PASSWORD}/g" /home/rtl/RTL/RTL-Config.json
 sudo -u rtl sed -i "s#CONFIG_PATH#${DATA_PATH}/lnd/lnd.conf#g" /home/rtl/RTL/RTL-Config.json
+sudo -u rtl sed -i "s#DB_PATH#${DATA_PATH}/rtl/database#g" /home/rtl/RTL/RTL-Config.json
+sudo -u rtl sed -i "s#BACKUP_PATH#${DATA_PATH}/rtl/backup#g" /home/rtl/RTL/RTL-Config.json
 
 # Add rtl service, enable it and start it
 sudo cp ${SCRIPT_PATH}/../../templates/rtl/rtl.service /etc/systemd/system/rtl.service
