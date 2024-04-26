@@ -23,7 +23,7 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 
 # Configure user
 sudo adduser --disabled-password --gecos "" rtl
-sudo adduser rtl bitcoin
+sudo adduser rtl loop
 sudo cp ${DATA_PATH}/lnd/data/chain/bitcoin/mainnet/admin.macaroon /home/rtl/admin.macaroon
 sudo chown rtl:rtl /home/rtl/admin.macaroon
 
