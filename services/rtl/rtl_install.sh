@@ -76,8 +76,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now rtl
 
 # Enable the tor hidden service
-sudo grep -qxF "hidden_service_rtl" /etc/tor/torrc
-if [ ! $? ]; then
+if ! grep -q "hidden_service_rtl" /etc/tor/torrc; then
     echo "" | sudo tee -a /etc/tor/torrc
     echo "HiddenServiceDir /var/lib/tor/hidden_service_rtl/" | sudo tee -a /etc/tor/torrc
     echo "HiddenServiceVersion 3" | sudo tee -a /etc/tor/torrc
