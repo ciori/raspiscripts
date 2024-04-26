@@ -63,12 +63,14 @@ fi
 tar -xvf loop-linux-${SYS_DPKG_ARCH}-${LOOP_VERSION}.tar.gz
 sudo install -m 0755 -o root -g root -t /usr/local/bin loop-linux-${SYS_DPKG_ARCH}-${LOOP_VERSION}/*
 
-# Configure user
+# Configure users and permissions
 sudo adduser --disabled-password --gecos "" loop
 sudo adduser $USER loop
+sudo adduser loop lnd
+sudo -u loop ln -s ${DATA_PATH}/lnd /home/loop/.lnd
 # ...
 
 # Add loopd service, enable it and start it
 sudo cp ${SCRIPT_PATH}/../../templates/loop/loopd.service /etc/systemd/system/loopd.service
-sudo systemctl system-reload
+sudo systemctl daemon-reload
 sudo systemctl enable --now loopd
