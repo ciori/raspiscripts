@@ -140,6 +140,7 @@ sudo chown lnd:lnd /home/lnd/lnd-start.sh
 sudo chmod 700 /home/lnd/lnd-start.sh
 sudo sed -i "s,#wallet-unlock-password-file=/tmp/lnd-wallet-password-pipe,wallet-unlock-password-file=/tmp/lnd-wallet-password-pipe,g" /data/lnd/lnd.conf
 sudo sed -i "s,ExecStart=/usr/local/bin/lnd,ExecStart=/home/lnd/lnd-start.sh,g" /etc/systemd/system/lnd.service
+sudo systemctl daemon-reload
 sudo systemctl restart lnd
 
 # Add lnd permissions to your user
