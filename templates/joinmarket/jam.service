@@ -1,0 +1,14 @@
+[Unit]
+Description=JoinMarket WebUI (Jam) daemon
+After=jmwalletd.service obwatcher.service
+
+[Service]
+WorkingDirectory=/home/jam/jam/
+ExecStart=/home/jam/jam-start.sh
+User=jam
+
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

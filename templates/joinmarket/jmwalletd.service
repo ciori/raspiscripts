@@ -1,0 +1,14 @@
+[Unit]
+Description=JoinMarket API daemon
+After=bitcoind.service
+
+[Service]
+WorkingDirectory=/home/joinmarket/joinmarket/scripts/
+ExecStart=/bin/sh -c '. /home/joinmarket/joinmarket/jmvenv/bin/activate && python3 jmwalletd.py'
+User=joinmarket
+
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
