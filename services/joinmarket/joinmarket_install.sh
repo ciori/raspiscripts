@@ -25,7 +25,7 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 #### SETUP JOINMARKET ####
 
 # Install dependencies
-sudo apt install python3-virtualenv curl python3-dev python3-pip build-essential automake pkg-config libtool libgmp-dev libltdl-dev libssl-dev libatlas3-base libopenjp2-7
+sudo apt install -y python3-virtualenv curl python3-dev python3-pip build-essential automake pkg-config libtool libgmp-dev libltdl-dev libssl-dev libatlas3-base libopenjp2-7
 
 # Create the wallet
 bitcoin-cli -named createwallet wallet_name=jm_wallet descriptors=false
