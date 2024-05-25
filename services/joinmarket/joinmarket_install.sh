@@ -75,13 +75,18 @@ sudo -u joinmarket bash -c "cd /home/joinmarket/joinmarket; ./install.sh --witho
 
 # Configure joinmarket
 sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/activate.sh /home/joinmarket/activate.sh
+sudo chmod 740 /home/joinmarket/activate.sh
+sudo chown joinmarket:joinmarket /home/joinmarket/activate.sh
 sudo -u joinmarket bash -c "cd /home/joinmarket; . activate.sh; ./wallet-tool.py"
-
+sudo sed -i "/rpc_user/c\#rpc_user = bitcoin"  ${DATA_PATH}/joinmarket/joinmarket.cfg
+sudo sed -i "/rpc_password/c\#rpc_password = password" ${DATA_PATH}/joinmarket/joinmarket.cfg
+sudo sed -i "/rpc_cookie_file/c\rpc_cookie_file = ${DATA_PATH}/bitcoin/.cookie" ${DATA_PATH}/joinmarket/joinmarket.cfg
+sudo sed -i "/onion_serving_port/c\onion_serving_port = 8090" ${DATA_PATH}/joinmarket/joinmarket.cfg
 
 
 #### SETUP JAM ####
 
-# ...
+
 
 
 # Final output
