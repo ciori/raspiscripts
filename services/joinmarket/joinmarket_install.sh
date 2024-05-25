@@ -25,7 +25,7 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 #### SETUP JOINMARKET ####
 
 # Install dependencies
-sudo apt install -y python3-virtualenv curl python3-dev python3-pip build-essential automake pkg-config libtool libgmp-dev libltdl-dev libssl-dev libatlas3-base libopenjp2-7
+sudo apt install -y python3-virtualenv python3-venv curl python3-dev python3-pip build-essential automake pkg-config libtool libgmp-dev libltdl-dev libssl-dev libatlas3-base libopenjp2-7
 
 # Create the wallet
 bitcoin-cli -named createwallet wallet_name=jm_wallet descriptors=false
@@ -69,10 +69,13 @@ fi
 
 # Install joinmarket
 sudo tar -xvzf joinmarket-clientserver-${JM_VERSION}.tar.gz -C /home/joinmarket/
-sudo -u joinmarket ln -s joinmarket-clientserver-${JM_VERSION} joinmarket
+sudo chown -R joinmarket:joinmarket /home/joinmarket/joinmarket-clientserver-${JM_VERSION}
+sudo -u joinmarket bash -c "cd /home/joinmarket; ln -s joinmarket-clientserver-${JM_VERSION} joinmarket"
 sudo -u joinmarket bash -c "cd /home/joinmarket/joinmarket; ./install.sh --without-qt --disable-secp-check --disable-os-deps-check"
 
-
+# Configure joinmarket
+sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/activate.sh /home/joinmarket/activate.sh
+sudo -u joinmarket bash -c "cd /home/joinmarket; . activate.sh; ./wallet-tool.py"
 
 
 
