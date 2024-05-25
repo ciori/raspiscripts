@@ -99,6 +99,7 @@ sudo -u joinmarket bash -c 'cd /home/joinmarket/.joinmarket; mkdir ssl/ && cd "$
 
 # Configure nginx
 sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/jam-reverse-proxy.conf /etc/nginx/streams-enabled/jam-reverse-proxy.conf
+sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/jam-ipv6to4-forwarding.conf /etc/nginx/conf.d/jam-ipv6to4-forwarding.conf
 sudo systemctl reload nginx
 
 # Allow jam on firewall
