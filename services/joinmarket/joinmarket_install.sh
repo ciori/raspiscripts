@@ -86,7 +86,26 @@ sudo sed -i "/onion_serving_port/c\onion_serving_port = 8090" ${DATA_PATH}/joinm
 
 #### SETUP JAM ####
 
+# Configure user
+sudo adduser --disabled-password --gecos "" jam
 
+# Install nodejs with nvm
+sudo -u jam bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 16'
+
+# Configure joinmarket for jam
+sudo sed -i "/max_cj_fee_rel/c\max_cj_fee_rel = 0.00003"  ${DATA_PATH}/joinmarket/joinmarket.cfg
+sudo sed -i "/max_cj_fee_abs/c\max_cj_fee_abs = 600"  ${DATA_PATH}/joinmarket/joinmarket.cfg
+sudo -u joinmarket bash -c 'cd /home/joinmarket/.joinmarket; mkdir ssl/ && cd "$_"; openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem -subj "/CN=localhost"'
+
+# Configure nginx
+sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/jam-reverse-proxy.conf /etc/nginx/streams-enabled/jam-reverse-proxy.conf
+sudo systemctl reload nginx
+
+# Allow jam on firewall
+sudo firewall-cmd --permanent --zone=public --add-port=4020/tcp
+sudo firewall-cmd --reload
+
+# ...
 
 
 # Final output
