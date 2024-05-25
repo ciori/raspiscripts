@@ -81,6 +81,7 @@ sudo -u joinmarket bash -c "cd /home/joinmarket; . activate.sh; ./wallet-tool.py
 sudo sed -i "/rpc_user/c\#rpc_user = bitcoin"  ${DATA_PATH}/joinmarket/joinmarket.cfg
 sudo sed -i "/rpc_password/c\#rpc_password = password" ${DATA_PATH}/joinmarket/joinmarket.cfg
 sudo sed -i "/rpc_cookie_file/c\rpc_cookie_file = ${DATA_PATH}/bitcoin/.cookie" ${DATA_PATH}/joinmarket/joinmarket.cfg
+sudo sed -i "/rpc_wallet_file/c\rpc_wallet_file = jm_wallet" ${DATA_PATH}/joinmarket/joinmarket.cfg
 sudo sed -i "/onion_serving_port/c\onion_serving_port = 8090" ${DATA_PATH}/joinmarket/joinmarket.cfg
 
 
@@ -95,7 +96,7 @@ sudo -u jam bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39
 # Configure joinmarket for jam
 sudo sed -i "/max_cj_fee_rel/c\max_cj_fee_rel = 0.00003" ${DATA_PATH}/joinmarket/joinmarket.cfg
 sudo sed -i "/max_cj_fee_abs/c\max_cj_fee_abs = 600" ${DATA_PATH}/joinmarket/joinmarket.cfg
-sudo -u joinmarket bash -c 'cd /home/joinmarket/.joinmarket; mkdir ssl/ && cd "$_"; openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem -subj "/CN=localhost"'
+sudo -u joinmarket bash -c 'cd /home/joinmarket/.joinmarket; mkdir ssl/ && cd "$_"; openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=example.com"'
 
 # Configure nginx
 sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/jam-reverse-proxy.conf /etc/nginx/streams-enabled/jam-reverse-proxy.conf
