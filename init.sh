@@ -186,25 +186,6 @@ sudo cp ${REPO_PATH}/templates/bitcoind/bitcoind.service /etc/systemd/system/bit
 sudo systemctl enable --now bitcoind
 
 
-#### COCKPIT ####
-
-# # Install cockpit
-# sudo apt install -y cockpit
-
-# # Configure cockpit to listen on port 443 and restart the socket
-# sudo mkdir -p /etc/systemd/system/cockpit.socket.d
-# sudo cp ${REPO_PATH}/templates/cockpit/listen.conf /etc/systemd/system/cockpit.socket.d/listen.conf
-# sudo systemctl daemon-reload
-# sudo systemctl restart cockpit.socket
-
-# # Allow cockpit on firewall
-# sudo firewall-cmd --permanent --zone=public --add-service=https
-# sudo firewall-cmd --reload
-
-# # Add the bitcoin cockpit plugin
-# # ...
-
-
 #### CONFS ####
 
 # Save useful variables in a file
