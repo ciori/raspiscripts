@@ -26,10 +26,10 @@ Here is the list of what is included:
 **!!! This is still in development and not all scripts are already available !!!**
 
 Some important things about this project:
-- Even though the name contains "Raspi...", it is recommended **NOT** to use a Raspberry Pi or other **Single Board Computers** as they are not that reliable, instead **learn** about **Proxmox**, with which you can have multiple Virtual Machines and properly manage Storage and Backups.
+- Even though the name contains "Raspi...", do **NOT** use a Raspberry Pi or other **Single Board Computers** as they are not that reliable, infact the project has been designed for a **Debian 12 x86_64** system. If you want the best experience, please **learn** about **Proxmox**, with which you can have multiple Virtual Machines and properly manage Storage and Backups, since this project does not have backups logic.
 - As stated before, this project is just a bunch of scripts and templates to automate what you would normally do with Raspibolt, so they are not really tested to be idempotent, so **use at your own risk**: install services only once and then update them with the specific script.
 - This is **Highly Experimental** and not thoroughly tested, therefore YOU need to watch out for incompatibilities and changes between versions and during updates. I repeat: ***this is just an automated version of what Raspibolt already offers***.
-- The scripts have been design to work with a **Debian 12 x86_64 system** (not arm) and only tested to work when **executed** from inside the **root** folder of the cloned **repository**.
+- The scripts have only been tested to work when **executed** from inside the **root** folder of the cloned **repository**.
 
 ## Requirements
 
