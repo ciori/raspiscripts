@@ -21,6 +21,14 @@ Here is the list of what is included:
 - RTL (with integrated loop daemon for swaps)
 - JoinMarket and the JAM web UI
 
+Network characteristics:
+- The Firewall in use is `firewalld` and only these endpoints are exposed through the **public zone** with a **self-signed** certificate:
+    - Electrs port: 50002
+    - Mempool port 4081
+    - RTL port: 4001
+    - JAM port: 4020
+- Each one of the previous endpoints has its own **Tor Hidden Service** enabled for external access
+
 ## CAUTION !!!
 
 **!!! This is still in development and not all scripts are already available !!!**
