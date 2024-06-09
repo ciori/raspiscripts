@@ -57,3 +57,12 @@ sudo install -m 0755 -o root -g root -t /usr/local/bin ./target/release/electrs
 
 # Restart the electrs service
 sudo systemctl enable --now electrs
+
+
+#### OUTPUT ####
+
+echo ""
+echo ""
+echo "Electrs has been updated to version v${ELECTRS_VERSION}"
+echo ""
+echo ""
