@@ -88,3 +88,4 @@ The update process should be straightforward:
     cd ~/raspiscripts
     ./services/<SERVICE_NAME>/<SERVICE_NAME>_update.sh
     ```
+3. Remember to check for changelogs between versions and update the service config files accordingly, if needed.
