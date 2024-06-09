@@ -71,6 +71,6 @@ sudo systemctl restart loopd
 
 echo ""
 echo ""
-echo "Loopd has been updated to version v${LOOP_VERSION}"
+echo "Loopd has been updated to version ${LOOP_VERSION}"
 echo ""
 echo ""
