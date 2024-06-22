@@ -76,8 +76,8 @@ LNBITS_VERSION=$(dialog \
 sudo -u lnbits bash -c "cd; cd lnbits; git checkout $LNBITS_VERSION"
 
 # Install lnbits
-sudo -u lnbits bash -c "cd; cd lnbits; poetry env use python${PYTHON_BIN_VERSION}; poetry install --only main"
+sudo -u lnbits bash -c "cd; cd lnbits; /home/lnbits/.local/bin/poetry env use python${PYTHON_BIN_VERSION}; /home/lnbits/.local/bin/poetry install --only main"
 
 # Configure lnbits
-sudo -u lnbits bash -c "cd; cd lnbits; cp .env.example .env"
-# ...
+sudo cp ${SCRIPT_PATH}/../../templates/lnbits/.env /home/lnbits/lnbits/.env
+sudo -u lnbits bash -c "chmod 600 /home/lnbits/lnbits/.env"
