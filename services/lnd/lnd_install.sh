@@ -138,7 +138,7 @@ sudo -u lnd bash -c "pass insert lnd/wallet-password"
 sudo cp ${SCRIPT_PATH}/../../templates/lnd/lnd-start.sh /home/lnd/lnd-start.sh
 sudo chown lnd:lnd /home/lnd/lnd-start.sh
 sudo chmod 700 /home/lnd/lnd-start.sh
-sudo sed -i "s,#wallet-unlock-password-file=/tmp/lnd-wallet-password-pipe,wallet-unlock-password-file=/tmp/lnd-wallet-password-pipe,g" /data/lnd/lnd.conf
+sudo sed -i "s,#wallet-unlock-password-file=/tmp/lnd-wallet-password-pipe,wallet-unlock-password-file=/tmp/lnd-wallet-password-pipe,g" ${DATA_PATH}/lnd/lnd.conf
 sudo sed -i "s,ExecStart=/usr/local/bin/lnd,ExecStart=/home/lnd/lnd-start.sh,g" /etc/systemd/system/lnd.service
 sudo systemctl daemon-reload
 sudo systemctl restart lnd
