@@ -1,24 +1,24 @@
-# Systemd unit for lnbits
-# /etc/systemd/system/lnbits.service
-
 [Unit]
 Description=LNbits
-# you can uncomment these lines if you know what you're doing
-# it will make sure that lnbits starts after lnd (replace with your own backend service)
-#Wants=lnd.service
 After=lnd.service
+PartOf=lnd.service
 
 [Service]
-# replace with the absolute path of your lnbits installation
 WorkingDirectory=/home/lnbits/lnbits
-# same here. run `which poetry` if you can't find the poetry binary
-ExecStart=/home/lnbits/.local/bin/poetry run lnbits
-# replace with the user that you're running lnbits on
+
+ExecStart=/home/lnbits/.local/bin/poetry run lnbits --port 5000 --host 0.0.0.0 --debug --reload
 User=lnbits
 Restart=always
 TimeoutSec=120
 RestartSec=30
-Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
+
+# Hardening measures
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
 
 [Install]
 WantedBy=multi-user.target

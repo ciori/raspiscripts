@@ -81,3 +81,27 @@ sudo -u lnbits bash -c "cd; cd lnbits; /home/lnbits/.local/bin/poetry env use py
 # Configure lnbits
 sudo cp ${SCRIPT_PATH}/../../templates/lnbits/.env /home/lnbits/lnbits/.env
 sudo -u lnbits bash -c "chmod 600 /home/lnbits/lnbits/.env"
+
+# Add lnbits service, enable it and start it
+sudo cp ${SCRIPT_PATH}/../../templates/lnbits/lnbits.service /etc/systemd/system/lnbits.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now lnbits
+
+# Enable the tor hidden service
+if ! grep -q "hidden_service_lnbits" /etc/tor/torrc; then
+    echo "" | sudo tee -a /etc/tor/torrc
+    echo "HiddenServiceDir /var/lib/tor/hidden_service_lnbits/" | sudo tee -a /etc/tor/torrc
+    echo "HiddenServiceVersion 3" | sudo tee -a /etc/tor/torrc
+    echo "HiddenServicePort 80 127.0.0.1:5000" | sudo tee -a /etc/tor/torrc
+    sudo systemctl reload tor
+fi
+LNBITS_TOR=$(sudo cat /var/lib/tor/hidden_service_lnbits/hostname)
+
+# Final output
+echo ""
+echo ""
+echo "LNbits has been installed!!!"
+echo ""
+echo "The Tor hidden service is: ${LNBITS_TOR}"
+echo "HTTPS Port: 4003"
+echo ""
