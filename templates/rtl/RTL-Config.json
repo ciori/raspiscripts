@@ -26,6 +26,7 @@
                 "logLevel": "ERROR",
                 "lnServerUrl": "https://127.0.0.1:8080",
                 "swapServerUrl": "https://127.0.0.1:8081",
+                "blockExplorerUrl": "https://127.0.0.1:4081",
                 "fiatConversion": false,
                 "unannouncedChannels": false
             }
