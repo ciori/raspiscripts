@@ -36,7 +36,7 @@ RTL_VERSION=$(dialog \
 sudo -u rtl bash -c "cd; cd RTL; git checkout $RTL_VERSION; git verify-tag $RTL_VERSION"
 
 # Install rtl
-sudo -u rtl bash -c 'cd; cd RTL; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --omit=dev'
+sudo -u rtl bash -c 'cd; cd RTL; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --omit=dev --legacy-peer-deps'
 
 # Start rtl
 sudo systemctl start rtl
