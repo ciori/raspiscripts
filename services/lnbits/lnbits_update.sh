@@ -24,6 +24,9 @@ SYS_DPKG_ARCH=$(dpkg --print-architecture)
 SYS_UNAME_ARCH=$(uname -m)
 SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 
+# Stop lnbits
+sudo systemctl stop lnbits
+
 # Update python
 cd /tmp
 wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz
@@ -49,6 +52,8 @@ sudo -u lnbits bash -c "cd; cd lnbits; git checkout $LNBITS_VERSION"
 # Install lnbits
 sudo -u lnbits bash -c "cd; cd lnbits; /home/lnbits/.local/bin/poetry env use python${PYTHON_BIN_VERSION}; /home/lnbits/.local/bin/poetry install --only main"
 
+# Start lnbits
+sudo systemctl start lnbits
 
 #### OUTPUT ####
 
