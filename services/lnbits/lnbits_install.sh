@@ -42,7 +42,7 @@ sudo firewall-cmd --reload
 sudo cp ${SCRIPT_PATH}/../../templates/lnbits/lnbits-reverse-proxy.conf /etc/nginx/streams-enabled/lnbits-reverse-proxy.conf
 sudo systemctl reload nginx
 
-# Install needed python 3.9 from tarball
+# Install needed python version from tarball
 sudo apt update -y
 sudo apt install -y software-properties-common build-essential libnss3-dev zlib1g-dev libgdbm-dev libncurses5-dev libssl-dev libffi-dev libreadline-dev libsqlite3-dev libbz2-dev
 cd /tmp
@@ -53,7 +53,7 @@ tar -xvf Python-${PYTHON_VERSION}.tgz
 cd Python-${PYTHON_VERSION}
 ./configure --enable-optimizations
 sudo make altinstall
-python3.9 --version
+python3.10 --version
 
 # Install needed python 3.9 from ppa
 # sudo apt update -y
