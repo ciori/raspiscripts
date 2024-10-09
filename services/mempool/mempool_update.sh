@@ -25,8 +25,9 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 sudo systemctl stop mempool
 
 # Update nodejs with nvm
-sudo -u mempool bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 20'
-sudo -u mempool bash -c 'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm alias default 20'
+sudo -u mempool -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+sudo -u mempool -i bash -c 'nvm install 20'
+sudo -u mempool -i bash -c 'nvm alias default 20'
 
 # Update Rust
 sudo -u mempool -i bash -c 'rustup update'

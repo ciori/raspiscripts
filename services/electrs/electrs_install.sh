@@ -17,7 +17,12 @@ SCRIPT_PATH=$(dirname "$SCRIPT")
 export $(xargs < ${SCRIPT_PATH}/../../envs)
 
 # Install electrs build tools
-sudo apt install -y cargo clang cmake
+# sudo apt purge -y cargo rustc
+# sudo apt autoremove -y
+sudo apt install -y clang cmake
+
+# Install Rust
+sudo -u electrs -i bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
 
 # Copy electrs nginx proxy configuration
 sudo cp ${SCRIPT_PATH}/../../templates/electrs/electrs-reverse-proxy.conf /etc/nginx/streams-enabled/electrs-reverse-proxy.conf
