@@ -32,6 +32,7 @@ sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
 
 # Install Rust
 sudo -u mempool -i bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+sudo -u mempool -i bash -c 'rustup default stable'
 
 # Allow mempool on firewall
 sudo firewall-cmd --permanent --zone=public --add-port=4081/tcp

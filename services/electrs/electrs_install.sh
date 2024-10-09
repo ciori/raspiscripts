@@ -23,6 +23,7 @@ sudo apt install -y clang cmake
 
 # Install Rust
 sudo -u electrs -i bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+sudo -u mempool -i bash -c 'rustup default stable'
 
 # Copy electrs nginx proxy configuration
 sudo cp ${SCRIPT_PATH}/../../templates/electrs/electrs-reverse-proxy.conf /etc/nginx/streams-enabled/electrs-reverse-proxy.conf
