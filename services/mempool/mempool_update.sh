@@ -26,14 +26,14 @@ sudo systemctl stop mempool
 
 # Update nodejs with nvm
 sudo -u mempool -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
-sudo -u mempool -i bash -c 'nvm install 20'
-sudo -u mempool -i bash -c 'nvm alias default 20'
+sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
+sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm alias default 20'
 
 # Update Rust
 sudo -u mempool -i bash -c 'rustup update'
 
 # Fetch the source code for the new version to use
-sudo -u mempool bash -c "cd; cd mempool; git fetch; git reset --hard"
+sudo -u mempool -i bash -c "cd; cd mempool; git fetch; git reset --hard"
 MEMPOOL_VERSION_LATEST=$(curl "https://api.github.com/repos/mempool/mempool/releases/latest" -s | jq .name -r)
 MEMPOOL_VERSION=$(dialog \
     --clear \
@@ -41,13 +41,13 @@ MEMPOOL_VERSION=$(dialog \
     --inputbox "What version would you like to download?" \
     $DIALOG_HEIGHT $DIALOG_WIDTH $MEMPOOL_VERSION_LATEST \
     2>&1 >/dev/tty)
-sudo -u mempool bash -c "cd; cd mempool; git checkout $MEMPOOL_VERSION"
+sudo -u mempool -i bash -c "cd; cd mempool; git checkout $MEMPOOL_VERSION"
 
 # Build mempool backend
-sudo -u mempool bash -c 'cd /home/mempool/mempool/backend; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --prod; npm run build'
+sudo -u mempool -i bash -c 'cd /home/mempool/mempool/backend; npm install --prod; npm run build'
 
 # Build mempool frontend
-sudo -u mempool bash -c 'cd /home/mempool/mempool/frontend; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --prod; npm run build'
+sudo -u mempool -i bash -c 'cd /home/mempool/mempool/frontend; npm install --prod; npm run build'
 
 # Configure nginx for mempool
 sudo rsync -av --delete /home/mempool/mempool/frontend/dist/mempool/ /var/www/mempool/

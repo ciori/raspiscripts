@@ -28,7 +28,7 @@ export NVM_DIR="\$HOME/.nvm"
 [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
 [ -s "\$NVM_DIR/bash_completion" ] && \. "\$NVM_DIR/bash_completion"
 EOF
-sudo -u mempool -i bash -c 'nvm install 20'
+sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
 
 # Install Rust
 sudo -u mempool -i bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
