@@ -24,6 +24,11 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 # Stop rtl
 sudo systemctl stop rtl
 
+# Update nodejs with nvm
+sudo -u rtl -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+sudo -u rtl -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
+sudo -u rtl -i bash -c '. "$NVM_DIR/nvm.sh"; nvm alias default 20'
+
 # Fetch the source code for the new version to use
 sudo -u rtl bash -c "cd; cd RTL; git fetch; git reset --hard"
 RTL_VERSION_LATEST=$(curl "https://api.github.com/repos/Ride-The-Lightning/RTL/releases/latest" -s | jq .tag_name -r)
@@ -33,10 +38,10 @@ RTL_VERSION=$(dialog \
     --inputbox "What version would you like to use?" \
     $DIALOG_HEIGHT $DIALOG_WIDTH $RTL_VERSION_LATEST \
     2>&1 >/dev/tty)
-sudo -u rtl bash -c "cd; cd RTL; git checkout $RTL_VERSION; git verify-tag $RTL_VERSION"
+sudo -u rtl -i bash -c "cd; cd RTL; git checkout $RTL_VERSION; git verify-tag $RTL_VERSION"
 
 # Install rtl
-sudo -u rtl bash -c 'cd; cd RTL; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --omit=dev --legacy-peer-deps'
+sudo -u rtl -i bash -c 'cd; cd RTL; npm install --omit=dev --legacy-peer-deps'
 
 # Start rtl
 sudo systemctl start rtl

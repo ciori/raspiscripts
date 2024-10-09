@@ -34,7 +34,14 @@ mkdir -p ${DATA_PATH}/rtl/{database,backup}
 sudo chown rtl:rtl -R ${DATA_PATH}/rtl
 
 # Install nodejs with nvm
-sudo -u rtl bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 20'
+sudo -u rtl -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+sudo tee -a /home/rtl/.profile <<EOF
+
+export NVM_DIR="\$HOME/.nvm"
+[ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+[ -s "\$NVM_DIR/bash_completion" ] && \. "\$NVM_DIR/bash_completion"
+EOF
+sudo -u rtl -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
 
 # Allow rtl on firewall
 sudo firewall-cmd --permanent --zone=public --add-port=4001/tcp
@@ -45,8 +52,8 @@ sudo cp ${SCRIPT_PATH}/../../templates/rtl/rtl-reverse-proxy.conf /etc/nginx/str
 sudo systemctl reload nginx
 
 # Get the source code and ask for the version to use
-sudo -u rtl bash -c 'curl https://keybase.io/suheb/pgp_keys.asc | gpg --import'
-sudo -u rtl bash -c "cd; git clone https://github.com/Ride-The-Lightning/RTL.git"
+sudo -u rtl -i bash -c 'curl https://keybase.io/suheb/pgp_keys.asc | gpg --import'
+sudo -u rtl -i bash -c "cd; git clone https://github.com/Ride-The-Lightning/RTL.git"
 RTL_VERSION_LATEST=$(curl "https://api.github.com/repos/Ride-The-Lightning/RTL/releases/latest" -s | jq .tag_name -r)
 RTL_VERSION=$(dialog \
     --clear \
@@ -54,13 +61,13 @@ RTL_VERSION=$(dialog \
     --inputbox "What version would you like to use?" \
     $DIALOG_HEIGHT $DIALOG_WIDTH $RTL_VERSION_LATEST \
     2>&1 >/dev/tty)
-sudo -u rtl bash -c "cd; cd RTL; git checkout $RTL_VERSION; git verify-tag $RTL_VERSION"
+sudo -u rtl -i bash -c "cd; cd RTL; git checkout $RTL_VERSION; git verify-tag $RTL_VERSION"
 
 # Verify tag and abort if it fails
 # ... git verify-tag $RTL_VERSION ...
 
 # Install rtl
-sudo -u rtl bash -c 'cd; cd RTL; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --omit=dev'
+sudo -u rtl -i bash -c 'cd; cd RTL; npm install --omit=dev'
 
 # Configure rtl
 #sudo -u rtl bash -c 'cd; cd RTL; cp Sample-RTL-Config.json ./RTL-Config.json'
