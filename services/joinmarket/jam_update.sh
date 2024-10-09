@@ -26,11 +26,12 @@ sudo systemctl stop jam
 
 # Update nodejs with nvm
 sudo -u mempool -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
-sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 16'
-sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm alias default 16'
+sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
+sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm alias default 20'
 
 # Fetch the source code for the new version to use
 sudo rm -rf /home/jam/jam
+sudo -u jam -i bash -c 'curl https://dergigi.com/PGP.txt | gpg --import'
 sudo -u jam -i bash -c "cd; git clone https://github.com/joinmarket-webui/jam.git"
 JAM_VERSION_LATEST=$(curl "https://api.github.com/repos/joinmarket-webui/jam/releases/latest" -s | jq .name -r | awk '{print $1;}')
 JAM_VERSION=$(dialog \

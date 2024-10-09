@@ -98,7 +98,7 @@ export NVM_DIR="\$HOME/.nvm"
 [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
 [ -s "\$NVM_DIR/bash_completion" ] && \. "\$NVM_DIR/bash_completion"
 EOF
-sudo -u jam -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 16'
+sudo -u jam -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
 
 # Configure joinmarket for jam
 sudo sed -i "/max_cj_fee_rel/c\max_cj_fee_rel = 0.00003" ${DATA_PATH}/joinmarket/joinmarket.cfg
