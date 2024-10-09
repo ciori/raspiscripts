@@ -20,8 +20,11 @@ export $(xargs < ${SCRIPT_PATH}/../../envs)
 sudo adduser --disabled-password --gecos "" mempool
 sudo adduser mempool bitcoin
 
-# Install nodejs with nvm
+# Install Nodejs with nvm
 sudo -u mempool bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 16'
+
+# Install Rust
+sudo -u mempool bash -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
 
 # Allow mempool on firewall
 sudo firewall-cmd --permanent --zone=public --add-port=4081/tcp
@@ -47,7 +50,7 @@ grant all privileges on mempool.* to 'mempool'@'localhost' identified by '${MARI
 EOF
 
 # Build mempool backend
-sudo -u mempool bash -c 'cd /home/mempool/mempool/backend; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --prod; npm run build'
+sudo -u mempool -i bash -c 'cd /home/mempool/mempool/backend; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install --prod; npm run build'
 
 # Configure the mempool backend
 sudo cp ${SCRIPT_PATH}/../../templates/mempool/mempool-config.json /home/mempool/mempool/backend/mempool-config.json

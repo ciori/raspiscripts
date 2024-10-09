@@ -28,6 +28,9 @@ sudo systemctl stop mempool
 sudo -u mempool bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 20'
 sudo -u mempool bash -c 'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm alias default 20'
 
+# Update Rust
+sudo -u mempool -i bash -c 'rustup update'
+
 # Fetch the source code for the new version to use
 sudo -u mempool bash -c "cd; cd mempool; git fetch; git reset --hard"
 MEMPOOL_VERSION_LATEST=$(curl "https://api.github.com/repos/mempool/mempool/releases/latest" -s | jq .name -r)
