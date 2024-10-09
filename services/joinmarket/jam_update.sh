@@ -25,9 +25,9 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 sudo systemctl stop jam
 
 # Update nodejs with nvm
-sudo -u mempool -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
-sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
-sudo -u mempool -i bash -c '. "$NVM_DIR/nvm.sh"; nvm alias default 20'
+sudo -u jam -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+sudo -u jam -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 20'
+sudo -u jam -i bash -c '. "$NVM_DIR/nvm.sh"; nvm alias default 20'
 
 # Fetch the source code for the new version to use
 sudo rm -rf /home/jam/jam
