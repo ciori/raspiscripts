@@ -35,8 +35,8 @@ sudo adduser --disabled-password --gecos "" joinmarket
 sudo usermod -a -G bitcoin,debian-tor joinmarket
 sudo mkdir ${DATA_PATH}/joinmarket
 sudo chown -R joinmarket:joinmarket ${DATA_PATH}/joinmarket
-sudo -u joinmarket ln -s ${DATA_PATH}/joinmarket /home/joinmarket/.joinmarket
-sudo -u joinmarket ln -s ${DATA_PATH}/bitcoin /home/joinmarket/.bitcoin
+sudo -i -u joinmarket ln -s ${DATA_PATH}/joinmarket /home/joinmarket/.joinmarket
+sudo -i -u joinmarket ln -s ${DATA_PATH}/bitcoin /home/joinmarket/.bitcoin
 
 # Download joinmarket
 cd /tmp
@@ -70,14 +70,14 @@ fi
 # Install joinmarket
 sudo tar -xvzf joinmarket-clientserver-${JM_VERSION}.tar.gz -C /home/joinmarket/
 sudo chown -R joinmarket:joinmarket /home/joinmarket/joinmarket-clientserver-${JM_VERSION}
-sudo -u joinmarket bash -c "cd /home/joinmarket; ln -s joinmarket-clientserver-${JM_VERSION} joinmarket"
-sudo -u joinmarket bash -c "cd /home/joinmarket/joinmarket; ./install.sh --without-qt --disable-secp-check --disable-os-deps-check"
+sudo -u joinmarket -i bash -c "cd /home/joinmarket; ln -s joinmarket-clientserver-${JM_VERSION} joinmarket"
+sudo -u joinmarket -i bash -c "cd /home/joinmarket/joinmarket; ./install.sh --without-qt --disable-secp-check --disable-os-deps-check"
 
 # Configure joinmarket
 sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/activate.sh /home/joinmarket/activate.sh
 sudo chmod 740 /home/joinmarket/activate.sh
 sudo chown joinmarket:joinmarket /home/joinmarket/activate.sh
-sudo -u joinmarket bash -c "cd /home/joinmarket; . activate.sh; ./wallet-tool.py"
+sudo -u joinmarket -i bash -c "cd /home/joinmarket; . activate.sh; ./wallet-tool.py"
 sudo sed -i "/rpc_user/c\#rpc_user = bitcoin" ${DATA_PATH}/joinmarket/joinmarket.cfg
 sudo sed -i "/rpc_password/c\#rpc_password = password" ${DATA_PATH}/joinmarket/joinmarket.cfg
 sudo sed -i "/rpc_cookie_file/c\rpc_cookie_file = ${DATA_PATH}/bitcoin/.cookie" ${DATA_PATH}/joinmarket/joinmarket.cfg
@@ -91,12 +91,19 @@ sudo sed -i "/onion_serving_port/c\onion_serving_port = 8090" ${DATA_PATH}/joinm
 sudo adduser --disabled-password --gecos "" jam
 
 # Install nodejs with nvm
-sudo -u jam bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; nvm install 16'
+sudo -u jam -i bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+sudo tee -a /home/jam/.profile <<EOF
+
+export NVM_DIR="\$HOME/.nvm"
+[ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+[ -s "\$NVM_DIR/bash_completion" ] && \. "\$NVM_DIR/bash_completion"
+EOF
+sudo -u jam -i bash -c '. "$NVM_DIR/nvm.sh"; nvm install 16'
 
 # Configure joinmarket for jam
 sudo sed -i "/max_cj_fee_rel/c\max_cj_fee_rel = 0.00003" ${DATA_PATH}/joinmarket/joinmarket.cfg
 sudo sed -i "/max_cj_fee_abs/c\max_cj_fee_abs = 600" ${DATA_PATH}/joinmarket/joinmarket.cfg
-sudo -u joinmarket bash -c 'cd /home/joinmarket/.joinmarket; mkdir ssl/ && cd "$_"; openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=example.com"'
+sudo -u joinmarket -i bash -c 'cd /home/joinmarket/.joinmarket; mkdir ssl/ && cd "$_"; openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=example.com"'
 
 # Configure nginx
 sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/jam-reverse-proxy.conf /etc/nginx/streams-enabled/jam-reverse-proxy.conf
@@ -108,8 +115,8 @@ sudo firewall-cmd --permanent --zone=public --add-port=4020/tcp
 sudo firewall-cmd --reload
 
 # Get the jam source code and ask for the version to use
-sudo -u jam bash -c 'curl https://dergigi.com/PGP.txt | gpg --import'
-sudo -u jam bash -c "cd; git clone https://github.com/joinmarket-webui/jam.git"
+sudo -u jam -i bash -c 'curl https://dergigi.com/PGP.txt | gpg --import'
+sudo -u jam -i bash -c "cd; git clone https://github.com/joinmarket-webui/jam.git"
 JAM_VERSION_LATEST=$(curl "https://api.github.com/repos/joinmarket-webui/jam/releases/latest" -s | jq .name -r | awk '{print $1;}')
 JAM_VERSION=$(dialog \
     --clear \
@@ -117,12 +124,12 @@ JAM_VERSION=$(dialog \
     --inputbox "What version would you like to download?" \
     $DIALOG_HEIGHT $DIALOG_WIDTH $JAM_VERSION_LATEST \
     2>&1 >/dev/tty)
-sudo -u jam bash -c "cd; cd jam; git checkout tags/${JAM_VERSION}; git verify-tag ${JAM_VERSION}"
+sudo -u jam -i bash -c "cd; cd jam; git checkout tags/${JAM_VERSION}; git verify-tag ${JAM_VERSION}"
 
 # Install jam
-sudo -u jam bash -c 'cd; cd jam; export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; npm install'
-sudo -u jam bash -c "cd; cd jam; touch .env"
-sudo -u jam bash -c 'grep -qxF "PORT=3020" /home/jam/jam/.env || echo "PORT=3020" >> /home/jam/jam/.env'
+sudo -u jam -i bash -c 'cd; cd jam; npm install'
+sudo -u jam -i bash -c "cd; cd jam; touch .env"
+sudo -u jam -i bash -c 'grep -qxF "PORT=3020" /home/jam/jam/.env || echo "PORT=3020" >> /home/jam/jam/.env'
 
 # Setup systemd services
 sudo cp ${SCRIPT_PATH}/../../templates/joinmarket/jmwalletd.service /etc/systemd/system/jmwalletd.service
