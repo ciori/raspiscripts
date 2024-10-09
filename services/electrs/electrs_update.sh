@@ -24,7 +24,7 @@ SYS_VERSION=$(lsb_release -c | grep Codename | awk -F' ' '{print $2}')
 # Update Rust
 # sudo apt purge -y cargo rustc
 # sudo apt autoremove -y
-sudo -u mempool -i bash -c 'rustup update'
+rustup update
 
 # Ask for the version and download the electrs repo
 cd /tmp
