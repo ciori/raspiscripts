@@ -47,6 +47,7 @@ sudo -u mempool -i bash -c "cd; cd mempool; git checkout $MEMPOOL_VERSION"
 sudo -u mempool -i bash -c 'cd /home/mempool/mempool/backend; npm install --prod; npm run build'
 
 # Build mempool frontend
+sudo rm -rf /home/mempool/mempool/frontend/node_modules
 sudo -u mempool -i bash -c 'cd /home/mempool/mempool/frontend; npm install --prod; npm run build'
 
 # Configure nginx for mempool
