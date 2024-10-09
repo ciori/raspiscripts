@@ -23,6 +23,7 @@ sudo apt install -y clang cmake
 
 # Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+. "$HOME/.cargo/env"
 rustup default stable
 
 # Copy electrs nginx proxy configuration
