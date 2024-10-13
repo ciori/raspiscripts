@@ -34,7 +34,7 @@ sudo -u mempool -i bash -c 'rustup update'
 
 # Fetch the source code for the new version to use
 sudo -u mempool -i bash -c "cd; cd mempool; git fetch; git reset --hard"
-MEMPOOL_VERSION_LATEST=$(curl "https://api.github.com/repos/mempool/mempool/releases/latest" -s | jq .name -r)
+MEMPOOL_VERSION_LATEST=$(curl "https://api.github.com/repos/mempool/mempool/tags" -s | jq '.|=sort_by(.name)' | jq .[].name -r | tail -1)
 MEMPOOL_VERSION=$(dialog \
     --clear \
     --title "Download Mempool" \
